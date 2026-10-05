@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "24.21.0"
+
+[[plugins]]
+  package = "/scripts/netlify-smoke-plugin"

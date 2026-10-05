@@ -1,0 +1,100 @@
+name: CI
+
+# PR code uses read-only permissions, checkout credentials are not persisted, and no PR-controlled field is interpolated into a command or ref.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Check out source without persisting credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js LTS
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Check formatting
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: TypeScript and Svelte checks
+        run: npm run check
+      - name: Unit tests
+        run: npm run test:unit
+      - name: Domain tests
+        run: npm run test:domain
+      - name: Scoring tests
+        run: npm run test:scoring
+      - name: Adapter fixture and deployment-smoke tests
+        run: npm run test:adapters
+      - name: API contract tests
+        run: npm run test:api
+      - name: Database-safety and security tests
+        run: npm run test:security
+      - name: Production build
+        run: npm run build
+      - name: Dependency audit
+        run: npm run audit
+
+  database:
+    name: database
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: Check out source without persisting credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.119.0
+      - name: Start isolated local Supabase stack
+        run: supabase start
+      - name: Rebuild only the local database from migrations
+        run: supabase db reset --local
+      - name: Run pgTAP domain and schema tests
+        run: supabase test db --local
+      - name: Lint the private application schema
+        run: supabase db lint --local --schema app --fail-on warning
+      - name: Stop local Supabase stack
+        if: always()
+        run: supabase stop --no-backup
+
+  dependency-review:
+    name: dependency-review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high

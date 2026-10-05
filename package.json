@@ -1,0 +1,51 @@
+{
+	"name": "nordic-ski-intelligence",
+	"private": true,
+	"version": "0.0.1",
+	"engines": {
+		"node": ">=24.21.0 <25"
+	},
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"format:check": "prettier --check .",
+		"format": "prettier --write .",
+		"lint": "eslint .",
+		"test:unit": "vitest run --passWithNoTests src/lib",
+		"test:domain": "vitest run --passWithNoTests tests/domain",
+		"test:scoring": "vitest run --passWithNoTests tests/scoring",
+		"test:adapters": "vitest run --passWithNoTests tests/adapters",
+		"test:api": "vitest run --passWithNoTests src/routes/api tests/api",
+		"test:security": "vitest run --passWithNoTests tests/security && node scripts/check-database-safety.js",
+		"test": "npm run test:unit && npm run test:domain && npm run test:scoring && npm run test:adapters && npm run test:api && npm run test:security",
+		"audit": "npm audit --audit-level=high"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@sveltejs/adapter-netlify": "^7.0.0",
+		"@sveltejs/kit": "^3.0.0",
+		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@types/node": "^24",
+		"eslint": "^10.4.1",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.19.0",
+		"globals": "^17.6.0",
+		"prettier": "^3.8.3",
+		"prettier-plugin-svelte": "^4.1.0",
+		"svelte": "^5.57.1",
+		"svelte-check": "^4.6.0",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.60.1",
+		"vite": "^8.3.0",
+		"vitest": "^4.1.8"
+	},
+	"imports": {
+		"#lib": "./src/lib/index.js",
+		"#lib/*": "./src/lib/*"
+	}
+}

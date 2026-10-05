@@ -1,6 +1,6 @@
 # Kehitys, haaramalli ja CI/CD
 
-**Tila:** Julkinen GitHub-repo ja `main`-haaran suojaus on otettu käyttöön ja luettu takaisin. Alustava GitHub Actions -ajo onnistui. Netlify-projekti on luotu, mutta GitHub OAuth -yhdistäminen on vielä kesken; Supabasen staging- tai tuotantoprojektia ei ole luotu.
+**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset on otettu käyttöön ja luettu takaisin. `main`-haaran CI meni läpi. PR #4:n ensimmäinen Dependency Review pysähtyi puuttuvaan riippuvuusgraafiin; se on nyt kytketty ja PR-ajon uudelleenvarmistus on kesken. Netlify-yhteys odottaa passkey-vahvistusta; Supabasen etäprojekteja ei ole luotu.
 
 ## Julkaisupolku
 
@@ -42,7 +42,7 @@ Kolmannen osapuolen GitHub Actions -toiminnot on kiinnitetty täyteen commit-SHA
 
 ## Riippuvuus- ja tietoturvapäivitykset
 
-Dependabot tarkistaa viikoittain npm-riippuvuudet ja GitHub Actions -versiot. CI ajaa `npm audit --audit-level=high`; PR:lle suoritetaan lisäksi Dependency Review. Action-SHA:t päivitetään PR:n kautta, ei muuttuvilla tageilla.
+Dependabot tarkistaa viikoittain npm-riippuvuudet ja GitHub Actions -versiot. GitHubin riippuvuusgraafi ja haavoittuvuusilmoitukset ovat käytössä; graafi lukee repoan manifesti- ja lock-tiedostot ja Dependency Review käyttää sitä PR-muutosten arviointiin.[86][87] CI ajaa `npm audit --audit-level=high`; PR:lle suoritetaan lisäksi Dependency Review. Action-SHA:t päivitetään PR:n kautta, ei muuttuvilla tageilla.
 
 Tuotantosalaisuuksia ei anneta PR:lle, preview-buildille, GitHub Actionsille tai selainbundleen. Kun palvelinpuolen integraatio lisätään, salaisuus asetetaan erikseen Netlifyn palvelin-/funktiokäyttöön eikä `PUBLIC_*`/`VITE_*`-muuttujaksi.[62][84]
 
@@ -66,3 +66,5 @@ Tuotantosalaisuuksia ei anneta PR:lle, preview-buildille, GitHub Actionsille tai
 [78] https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository — Create GitHub rulesets
 [79] https://docs.netlify.com/build/git-workflows/overview — Netlify Git workflows and production protection
 [84] https://docs.netlify.com/build/configure-builds/environment-variables — Netlify build environment variables
+[86] https://docs.github.com/en/rest/repos/repos?apiVersion=2026-03-10 — GitHub REST enable vulnerability alerts
+[87] https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/enable-dependency-graph — GitHub enable dependency graph

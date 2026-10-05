@@ -1,6 +1,6 @@
 # ADR-0006: Netlify-hosting ja GitHub Actions CI
 
-- **Tila:** Hyväksytty. GitHubin `main`-suojaus on aktiivinen; Netlify-projekti on luotu mutta GitHub-yhdistäminen ja ensimmäinen deploy odottavat passkey-vahvistusta. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
+- **Tila:** Hyväksytty. GitHubin `main`-suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat aktiivisia; Netlify-projekti on luotu mutta GitHub-yhdistäminen ja ensimmäinen deploy odottavat passkey-vahvistusta. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
 - **Päivä:** 2026-10-05
 
 ## Konteksti

@@ -1,6 +1,6 @@
 # ADR-0006: Netlify-hosting ja GitHub Actions CI
 
-- **Tila:** Hyväksytty. Netlify-Git-yhteys, tuotantodeploy ja PR #5 Deploy Preview on todennettu; `main` vaatii CI:n lisäksi Preview-checkin. Netlifyn suorat CLI/MCP/API-julkaisut ovat yhä sallittuja ja pitää rajata pois ennen agenttien tuotantojulkaisuoikeutta. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
+- **Tila:** Hyväksytty. Netlify-Git-yhteys, tuotantodeploy ja PR #5 Deploy Preview on todennettu; `main` vaatii CI:n lisäksi Preview-checkin. Tuotantojulkaisu on rajattu Netlifyn asetuksella `main`-haaran Git-workflow’hun; CLI/MCP/API eivät voi julkaista tuotantoon. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
 - **Päivä:** 2026-10-05
 
 ## Konteksti
@@ -17,24 +17,24 @@ Repositoriossa on yksi yhteistyökumppani, joten vaadittujen hyväksyntöjen mä
 
 PR-esikatselu korvaa erillisen staging-verkkosivun MVP:ssä. Staging-tietokanta on edelleen perusteltu ennen tuotantointegraatioita, mutta se luodaan vasta erillisen kustannushyväksynnän jälkeen. CI:n tietokantatestit käyttävät paikallista Supabase-stackia ja vain migraatioita.[59][70]
 
-Netlify-Git-yhteys käynnistää tuotantobuildin `main`-haarasta; tuotantodeploy `6ac3e90949031a6686fe840d` oli valmis. PR #5 Deploy Preview `6ac3eb339a8a3d0008d0ae7d` oli valmis; molempien `onSuccess`-pluginin `/api/health`-smoke onnistui. Preview-check on nyt vaadittu ennen mergeä. Rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
+Netlify-Git-yhteys käynnistää tuotantobuildin `main`-haarasta; ensimmäisen tuotantodeployn smoke onnistui. PR #5 Deploy Previewn `/api/health`-smoke onnistui, ja `main` vaatii nyt Preview-checkin ennen mergeä. Rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
 
 ## Vaihtoehdot
 
 - Jatkuvaa staging-verkkosivua ei ylläpidetä: PR Deploy Previewt tarjoavat muutoksen erillisen tarkistusosoitteen.[66]
-- Tuotantopolku on käytännössä GitHub PR → suojattu `main` → Netlify Git deploy. Netlify-asetus sallii kuitenkin tällä hetkellä myös CLI-, MCP- ja API-julkaisut; rajaa ne pois ennen agenttien tuotantojulkaisuoikeutta. Build-hookeja ei ole lisätty.[79][85]
+- Tuotantopolku on GitHub PR → vaaditut CI- ja Netlify Preview -checkit → suojattu `main` → Netlify Git deploy. Enforce deployment methods -asetus estää CLI-, MCP- ja API-julkaisut tuotantoon. Build-hookeja ei ole lisätty.[79][85]
 - Tuotantosalaisuuksia ei anneta PR-buildille, GitHub Actionsille tai frontend-bundleen. Netlify-muuttujat lisätään tarvittaessa vain oikeisiin server/runtime-scopeihin.[64][84]
 
 ## Seuraukset ja avoimet asiat
 
 - CI ajaa formatoinnin, lintin, TypeScript/Svelte-tarkistukset, testiryhmät, paikallisen Supabase-migraatiovalidoinnin, skeemalintin, buildin ja riippuvuustarkistukset.
-- Netlify-Git-yhteys, tuotantodeploy `6ac3e90949031a6686fe840d` ja PR #5 Deploy Preview `6ac3eb339a8a3d0008d0ae7d` on todennettu; kummankin deployn smoke-plugin onnistui. `main` vaatii nyt myös Netlify Preview -checkin.
+- Netlify-Git-yhteys, ensimmäinen tuotantodeploy ja PR #5 Deploy Preview on todennettu; kummankin deployn smoke-plugin onnistui. `main` vaatii myös Netlify Preview -checkin.
 - Supabasen etäprojekteja, tuotantotunnuksia tai migraatioavaimia ei ole luotu. Tuotannon etämigraatiot eivät kuulu CI-jobiin.
 - Kustannus, alue ja erillisten staging-/tuotantotietokantojen luonti vahvistetaan ennen niiden provisiointia.
 
 ## Uudelleenarvioi, kun
 
-PR Deploy Preview on todennettu, Netlify-julkaisumenetelmät on rajattu Git-only-tilaan, Supabasen alue- ja kustannuspäätös on tehty tai hostingin kustannus, suorituskyky, käytettävyys tai tietojen sijaintivaatimukset muuttuvat.
+Uudelleenarvioi, jos Netlify Git-only -rajaus muuttuu, Supabasen alue- ja kustannuspäätös tehdään tai hostingin kustannus, suorituskyky, käytettävyys tai tietojen sijaintivaatimukset muuttuvat.
 
 ## Sources
 

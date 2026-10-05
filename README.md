@@ -26,7 +26,7 @@ The database suite uses a local Supabase stack only. See [database setup and tes
 
 ## Git and deployment
 
-Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs plus `quality`, `database`, `dependency-review` and `netlify/nordic-ski-intelligence/deploy-preview`; `main` blocks direct/force pushes. Production and PR #5 Deploy Preview both passed `/api/health` smoke tests. Netlify still permits direct CLI/MCP/API production deploys; restrict to Git-only before granting agents production deploy access. See:
+Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs plus `quality`, `database`, `dependency-review` and `netlify/nordic-ski-intelligence/deploy-preview`; `main` blocks direct/force pushes. Production and PR #5 Deploy Preview both passed `/api/health` smoke tests. Netlify production deploys are restricted to the `main` Git branch; CLI/MCP/API cannot deploy to production. See:
 
 - [CI/CD and branch workflow](docs/architecture/cicd.md)
 - [Environments and secrets](docs/architecture/environments.md)

@@ -1,6 +1,6 @@
 # Kehitys, haaramalli ja CI/CD
 
-**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat käytössä. Netlify on yhdistetty repoihin; tuotantodeploy ja PR #5 Deploy Preview onnistuivat, ja molempien `/api/health`-smoke läpäisi. `main` vaatii nyt myös Netlify Deploy Preview -checkin. Supabasen etäprojekteja ei ole luotu.
+**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat käytössä. Netlify on yhdistetty repoihin ja tuotantodeploy on rajattu `main`-haaran Git-workflow’hun; tuotanto- ja PR #5 Deploy Preview -smoket onnistuivat. `main` vaatii Netlify Deploy Preview -checkin. Supabasen etäprojekteja ei ole luotu.
 
 ## Julkaisupolku
 
@@ -50,7 +50,7 @@ Tuotantosalaisuuksia ei anneta PR:lle, preview-buildille, GitHub Actionsille tai
 
 - Tuotannon/stagingin Supabase-projekteja tai niiden tunnuksia ei ole luotu. Tuotannon migraatioiden etäjulkaisu pysyy suljettuna, kunnes projektien kustannukset on hyväksytty ja ympäristöt on konfiguroitu.
 - Scoring-moottorin, lähdeadapterien ja varsinaisen tuotteen API:n TypeScript-testit lisätään niiden toteutuksen yhteydessä. Nykyiset tyhjät testiluokat ohitetaan näkyvästi `--passWithNoTests`-valitsimella; ne eivät väitä testikattavuutta. Domain-skeeman nykyiset 72 pgTAP-väitettä ajetaan oikeasti.
-- Netlify-tuotantodeploy ja PR #5 Deploy Preview on todennettu (molemmissa smoke-plugin onnistui). Netlify Preview -status on vaadittu `main`-check. Netlify-asetus sallii silti CLI-, MCP- ja API-julkaisut tuotantoon; Git-only-rajaus on vielä tehtävä ennen agenttien tuotantojulkaisuoikeutta.
+- Netlify-tuotantodeploy ja PR #5 Deploy Preview on todennettu (molemmissa smoke-plugin onnistui). Netlify Preview -status on vaadittu `main`-check. Netlify-asetus sallii tuotantoon vain `main`-haaran Git-deployn; CLI-, MCP- ja API-julkaisut eivät voi julkaista tuotantoon.
 
 ## Sources
 

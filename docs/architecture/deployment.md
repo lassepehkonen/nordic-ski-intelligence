@@ -6,16 +6,16 @@
 2. GitHub Actions ajaa laadun, tyyppien, testien, tietokantamigraatioiden ja riippuvuusturvan tarkistukset.
 3. Netlify rakentaa PR:stä Deploy Previewn; katselmoija tarkistaa sivun ja `/api/health`-sopimuksen.
 4. Ihminen hyväksyy muutoksen ja mergeää PR:n `main`-haaraan.
-5. Netlify rakentaa tuotannon `main`-haarasta. Ensimmäinen julkaisu tuli GitHubin `main`-haarasta, mutta Netlifyn asetussivu sallii vielä myös CLI-, MCP- ja API-julkaisut tuotantoon. Rajoita nämä pois ennen kuin agenteille annetaan tuotantojulkaisuoikeus; kunnes asetus on muutettu, käytä vain GitHubin suojattua PR-polku.[68][79]
+5. Netlify rakentaa tuotannon `main`-haarasta. Enforce deployment methods -asetus sallii tuotantoon vain `main`-haaran Git-deployn; CLI-, MCP- ja API-julkaisuja ei voi käyttää tuotantoon. PR:n GitHub- ja Netlify-tarkistukset ovat merge-portit.[68][79]
 6. Repo sisältää Netlify Build Pluginin, jonka `onSuccess` kutsuu deploy-kohtaisen `DEPLOY_URL`-osoitteen `/api/health`-reittiä. Se tarkistaa HTTP-tuloksen, JSON-tyypin ja `{ "status": "ok" }` -sopimuksen ja kirjaa tuloksen Netlifyn deploy-lokiin.[81][82][84]
 
 Netlify ajaa `onSuccess`-hookin vasta onnistuneen deployn jälkeen; se ei voi estää jo julkaistua versiota. Smoke-virhe merkitään build-/plugin-tulokseen ja vaatii välittömän palautuksen.[82][83]
 
 ## Netlify-asetukset
 
-`netlify.toml` määrittää SvelteKit-buildin, Node-version ja smoke-pluginin. Netlify on yhdistetty julkiseen GitHub-repoon `lassepehkonen/nordic-ski-intelligence`; tuotantohaara on `main`, Deploy Previewt ovat käytössä PR:ille ja muut kuin tuotantohaarat eivät saa erillisiä branch-deployta. Netlifyn Git-yhteys antaa build-järjestelmälle pääsyn lähdekoodiin.[80] Tuotantodeploy `6ac3e90949031a6686fe840d` julkaisi commitin `e824f34afe37daa8a2cd3e33e0b73c693f19673a`; deploy on `ready`, plugin-tila `success` ja `/api/health` palauttaa `{"status":"ok"}`.
+`netlify.toml` määrittää SvelteKit-buildin, Node-version ja smoke-pluginin. Netlify on yhdistetty julkiseen GitHub-repoon `lassepehkonen/nordic-ski-intelligence`; tuotantohaara on `main`, Deploy Previewt ovat käytössä PR:ille ja muut kuin tuotantohaarat eivät saa erillisiä branch-deployta. Netlifyn Git-yhteys antaa build-järjestelmälle pääsyn lähdekoodiin.[80] Ensimmäinen `main`-tuotantodeploy commitille `e824f34afe37daa8a2cd3e33e0b73c693f19673a` oli `ready`, smoke-plugin onnistui ja `/api/health` palautti `{"status":"ok"}`.
 
-Build-hookeja ei ole lisätty. Vaikka käytännön julkaisupolku on Git, Netlify-asetus sallii tällä hetkellä myös suorat CLI-, MCP- ja API-julkaisut. Rajoita ne Netlifyn deployment-methods-asetuksella ennen agenttien tuotantokäyttöä.[79][85]
+Build-hookeja ei ole lisätty. Netlifyn Enforce deployment methods -asetus on Git-only tuotantoon: CLI, MCP ja API eivät voi julkaista tuotantoon. Deploy Preview -konteksti pysyy käytössä PR-katselmointia varten.[79][85]
 
 Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuutta tai muuta tuotantotunnusta. Tämän vaiheen sovellusskeleton ei käytä ulkoisia tunnuksia.
 
@@ -28,7 +28,7 @@ Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuut
 
 ## Julkaisun raportointi
 
-Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. Tuotantodeploy `6ac3e90949031a6686fe840d` ja PR #5 Preview `6ac3eb339a8a3d0008d0ae7d` olivat `ready`; molempien smoke-plugin onnistui ja `/api/health` palautti HTTP 200 sekä `{"status":"ok"}`. PR Preview -status vaaditaan nyt ennen `main`-mergeä.
+Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. Ensimmäinen `main`-tuotantodeploy ja PR #5 Preview olivat `ready`; molempien smoke-plugin onnistui ja `/api/health` palautti HTTP 200 sekä `{"status":"ok"}`. PR Preview -status vaaditaan nyt ennen `main`-mergeä.
 
 Erillistä sähköposti-/chat-ilmoitusintegraatiota ei tässä vaiheessa konfiguroida; Netlifyn deploy-notifications-palvelu on mahdollinen myöhempi lisä, mutta nykyinen raportointipolku on deploy-loki ja GitHub-status.[67]
 

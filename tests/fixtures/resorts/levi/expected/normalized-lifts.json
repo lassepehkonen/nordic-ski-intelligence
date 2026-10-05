@@ -1,0 +1,11 @@
+{
+  "facts": [
+    { "category": "lift", "key": "open_count", "value": 2 },
+    { "category": "lift", "key": "total_count", "value": 3 }
+  ],
+  "details": [
+    { "external_id": "fixture-lift-a", "name": "Fixture Lift A", "kind": "chairlift", "status": "open" },
+    { "external_id": "fixture-lift-b", "name": "Fixture Lift B", "kind": "gondola", "status": "open" },
+    { "external_id": "fixture-lift-c", "name": "Fixture Lift C", "kind": "tow", "status": "closed" }
+  ]
+}

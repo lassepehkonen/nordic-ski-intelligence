@@ -1,0 +1,10 @@
+{
+  "facts": [
+    { "category": "snow", "key": "base_depth", "value": 62, "unit": "cm" },
+    { "category": "snow", "key": "mid_depth", "value": 55, "unit": "cm" },
+    { "category": "snow", "key": "summit_depth", "value": 78, "unit": "cm" },
+    { "category": "snow", "key": "new_snow_24h", "value": 3, "unit": "cm" },
+    { "category": "snow", "key": "new_snow_72h", "value": 9, "unit": "cm" },
+    { "category": "snow", "key": "surface_condition", "value": "packed_powder" }
+  ]
+}

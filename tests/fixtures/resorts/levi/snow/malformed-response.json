@@ -1,0 +1,13 @@
+{
+  "_meta": {
+    "kind": "snow_snapshot",
+    "source": "synthetic-fixture",
+    "disclaimer": "Malformed fixture used to verify that the parser returns a fatal ParseResult without throwing.",
+    "fetched_at": "2026-02-20T09:00:00.000Z"
+  },
+  "snow": {
+    "base_depth_cm": "not-a-number",
+    "mid_depth_cm": null,
+    "summit_depth_cm": 78
+  }
+}

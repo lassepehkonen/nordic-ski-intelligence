@@ -1,0 +1,11 @@
+{
+  "facts": [
+    { "category": "piste", "key": "open_count", "value": 2 },
+    { "category": "piste", "key": "total_count", "value": 3 }
+  ],
+  "details": [
+    { "external_id": "fixture-slope-1", "name": "Fixture Slope 1", "difficulty": "green", "status": "open" },
+    { "external_id": "fixture-slope-2", "name": "Fixture Slope 2", "difficulty": "blue", "status": "open" },
+    { "external_id": "fixture-slope-3", "name": "Fixture Slope 3", "difficulty": "black", "status": "closed" }
+  ]
+}

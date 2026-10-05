@@ -26,7 +26,7 @@ The database suite uses a local Supabase stack only. See [database setup and tes
 
 ## Git and deployment
 
-Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs and the `quality`, `database` and `dependency-review` checks; `main` also blocks direct/force pushes. The repository is public and `main` is protected by required PR/check rules. The Netlify project exists, but GitHub OAuth is still waiting for passkey verification, so no PR Preview or production deployment is active yet. Once connected, the intended flow is human review, merge, production deploy and `/api/health` smoke test. See:
+Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs and the `quality`, `database` and `dependency-review` checks; `main` also blocks direct/force pushes. The repository is public and protected. Netlify is linked to the repository, and the first `main` production deploy plus `/api/health` smoke test succeeded. A PR Deploy Preview is being verified separately. See:
 
 - [CI/CD and branch workflow](docs/architecture/cicd.md)
 - [Environments and secrets](docs/architecture/environments.md)

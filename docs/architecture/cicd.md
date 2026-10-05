@@ -1,6 +1,6 @@
 # Kehitys, haaramalli ja CI/CD
 
-**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset on otettu käyttöön ja luettu takaisin. `main`-haaran CI meni läpi. PR #4:n ensimmäinen Dependency Review pysähtyi puuttuvaan riippuvuusgraafiin; se on nyt kytketty ja PR-ajon uudelleenvarmistus on kesken. Netlify-yhteys odottaa passkey-vahvistusta; Supabasen etäprojekteja ei ole luotu.
+**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset on otettu käyttöön ja luettu takaisin. PR #4 yhdistettiin; sen kaikki vaaditut tarkistukset ja `main`-haaran CI onnistuivat. Netlify on yhdistetty tähän GitHub-repoon: `main`-haaran tuotantodeploy on valmis ja post-deploy-smoke onnistui. PR Deploy Previewn erillinen testi on vielä tekemättä; Supabasen etäprojekteja ei ole luotu.
 
 ## Julkaisupolku
 
@@ -50,7 +50,7 @@ Tuotantosalaisuuksia ei anneta PR:lle, preview-buildille, GitHub Actionsille tai
 
 - Tuotannon/stagingin Supabase-projekteja tai niiden tunnuksia ei ole luotu. Tuotannon migraatioiden etäjulkaisu pysyy suljettuna, kunnes projektien kustannukset on hyväksytty ja ympäristöt on konfiguroitu.
 - Scoring-moottorin, lähdeadapterien ja varsinaisen tuotteen API:n TypeScript-testit lisätään niiden toteutuksen yhteydessä. Nykyiset tyhjät testiluokat ohitetaan näkyvästi `--passWithNoTests`-valitsimella; ne eivät väitä testikattavuutta. Domain-skeeman nykyiset 72 pgTAP-väitettä ajetaan oikeasti.
-- GitHubin `main`-suojaus on luettu takaisin. Netlify-projekti on luotu, mutta GitHub-yhteys odottaa passkey-vahvistusta; Deploy Preview- tai tuotantojulkaisua ei ole vielä todennettu.
+- GitHubin `main`-suojaus on luettu takaisin. Netlify-Git-yhteys ja `main`-tuotantojulkaisu on todennettu; smoke-plugin onnistui. PR Deploy Preview testataan erikseen seuraavassa PR:ssä. Netlify-asetus sallii tällä hetkellä myös CLI-, MCP- ja API-julkaisut tuotantoon; rajoita julkaisut Git-workflow’hun ennen kuin agenteille annetaan tuotantojulkaisuoikeus.
 
 ## Sources
 

@@ -6,16 +6,16 @@
 2. GitHub Actions ajaa laadun, tyyppien, testien, tietokantamigraatioiden ja riippuvuusturvan tarkistukset.
 3. Netlify rakentaa PR:stä Deploy Previewn; katselmoija tarkistaa sivun ja `/api/health`-sopimuksen.
 4. Ihminen hyväksyy muutoksen ja mergeää PR:n `main`-haaraan.
-5. Netlify rakentaa tuotannon `main`-haarasta. Netlifyn Git-pohjaisen julkaisun suojaus pidetään päällä, jotta tuotantoon julkaistaan Git-työnkulusta eikä agentin suoralla CLI/API-julkaisulla.[68][79]
+5. Netlify rakentaa tuotannon `main`-haarasta. Ensimmäinen julkaisu tuli GitHubin `main`-haarasta, mutta Netlifyn asetussivu sallii vielä myös CLI-, MCP- ja API-julkaisut tuotantoon. Rajoita nämä pois ennen kuin agenteille annetaan tuotantojulkaisuoikeus; kunnes asetus on muutettu, käytä vain GitHubin suojattua PR-polku.[68][79]
 6. Repo sisältää Netlify Build Pluginin, jonka `onSuccess` kutsuu deploy-kohtaisen `DEPLOY_URL`-osoitteen `/api/health`-reittiä. Se tarkistaa HTTP-tuloksen, JSON-tyypin ja `{ "status": "ok" }` -sopimuksen ja kirjaa tuloksen Netlifyn deploy-lokiin.[81][82][84]
 
 Netlify ajaa `onSuccess`-hookin vasta onnistuneen deployn jälkeen; se ei voi estää jo julkaistua versiota. Smoke-virhe merkitään build-/plugin-tulokseen ja vaatii välittömän palautuksen.[82][83]
 
 ## Netlify-asetukset
 
-`netlify.toml` määrittää SvelteKit-buildin, Node-version ja paikallisen smoke-pluginin. Netlify-projekti on luotu ja sen tarkoitettu lähde on julkinen GitHub-repo; GitHub OAuth -yhdistäminen odottaa passkey-vahvistusta, eikä sivustolla ole vielä deployta. Yhdistäessä tuotantohaaraksi asetetaan `main` ja PR Deploy Previewt otetaan käyttöön. Repo-linkitys antaa Netlifyn GitHub-integraatiolle pääsyn lähdekoodiin.[80]
+`netlify.toml` määrittää SvelteKit-buildin, Node-version ja smoke-pluginin. Netlify on yhdistetty julkiseen GitHub-repoon `lassepehkonen/nordic-ski-intelligence`; tuotantohaara on `main`, Deploy Previewt ovat käytössä PR:ille ja muut kuin tuotantohaarat eivät saa erillisiä branch-deployta. Netlifyn Git-yhteys antaa build-järjestelmälle pääsyn lähdekoodiin.[80] Tuotantodeploy `6ac3e90949031a6686fe840d` julkaisi commitin `e824f34afe37daa8a2cd3e33e0b73c693f19673a`; deploy on `ready`, plugin-tila `success` ja `/api/health` palauttaa `{"status":"ok"}`.
 
-Erillisiä build-hookeja tai token-pohjaista suoraa tuotantojulkaisua ei lisätä; tuotanto alkaa vain suojatusta `main`-haaran Git-julkaisusta.[79][85]
+Build-hookeja ei ole lisätty. Vaikka käytännön julkaisupolku on Git, Netlify-asetus sallii tällä hetkellä myös suorat CLI-, MCP- ja API-julkaisut. Rajoita ne Netlifyn deployment-methods-asetuksella ennen agenttien tuotantokäyttöä.[79][85]
 
 Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuutta tai muuta tuotantotunnusta. Tämän vaiheen sovellusskeleton ei käytä ulkoisia tunnuksia.
 
@@ -28,7 +28,7 @@ Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuut
 
 ## Julkaisun raportointi
 
-Kun GitHub-yhteys on valmis, Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. Suojattuun `main`-haaraan mergetty PR käynnistää tuotantobuildin. Julkaisua ei raportoida onnistuneeksi ennen kuin deploy-tila ja smoke-tulos on luettu takaisin.
+Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. `main`-haaran tuotantodeploy ja `/api/health`-smoke on luettu takaisin onnistuneiksi. PR Deploy Previewn erillinen onnistuminen varmennetaan seuraavalla PR:llä ennen kuin pipeline merkitään kokonaan valmiiksi.
 
 Erillistä sähköposti-/chat-ilmoitusintegraatiota ei tässä vaiheessa konfiguroida; Netlifyn deploy-notifications-palvelu on mahdollinen myöhempi lisä, mutta nykyinen raportointipolku on deploy-loki ja GitHub-status.[67]
 

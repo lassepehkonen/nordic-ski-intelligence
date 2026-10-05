@@ -1,11 +1,11 @@
 # ADR-0006: Netlify-hosting ja GitHub Actions CI
 
-- **Tila:** Hyväksytty. GitHubin `main`-suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat aktiivisia; Netlify-projekti on luotu mutta GitHub-yhdistäminen ja ensimmäinen deploy odottavat passkey-vahvistusta. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
+- **Tila:** Hyväksytty. GitHubin `main`-suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat aktiivisia. Netlify on yhdistetty repoihin; ensimmäinen `main`-tuotantodeploy ja smoke-tarkistus onnistuivat. PR Previewn erillinen testi on kesken; Supabasen staging- ja tuotantoprojekteja ei ole luotu.
 - **Päivä:** 2026-10-05
 
 ## Konteksti
 
-Tuote tarvitsee SvelteKit SSR:n, PR-kohtaiset esikatselut, erilliset staging- ja tuotantotietokannat sekä agenttimuutoksille turvallisen julkaisupolun. Käytössä on julkinen GitHub-repo `lassepehkonen/nordic-ski-intelligence`; Netlify-projekti on olemassa, mutta sitä ei ole vielä yhdistetty repoihin.
+Tuote tarvitsee SvelteKit SSR:n, PR-kohtaiset esikatselut, erilliset staging- ja tuotantotietokannat sekä agenttimuutoksille turvallisen julkaisupolun. Käytössä on julkinen GitHub-repo `lassepehkonen/nordic-ski-intelligence`, joka on yhdistetty Netlify-projektiin. Tuotantohaara on `main`; Deploy Previewt on asetettu PR:ille ja Netlify-projektin ensimmäinen deploy on valmis.
 
 ## Päätös
 
@@ -17,24 +17,24 @@ Repositoriossa on yksi yhteistyökumppani, joten vaadittujen hyväksyntöjen mä
 
 PR-esikatselu korvaa erillisen staging-verkkosivun MVP:ssä. Staging-tietokanta on edelleen perusteltu ennen tuotantointegraatioita, mutta se luodaan vasta erillisen kustannushyväksynnän jälkeen. CI:n tietokantatestit käyttävät paikallista Supabase-stackia ja vain migraatioita.[59][70]
 
-Kun Netlify-Git-yhteys on valmis, PR:t tuottavat Deploy Previewn ja `main`-haaran merge käynnistää tuotantobuildin. `onSuccess`-plugin tekee deployn jälkeisen `/api/health`-smoken; rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
+Netlify-Git-yhteys käynnistää tuotantobuildin `main`-haarasta; `onSuccess`-pluginin `/api/health`-smoke onnistui ensimmäisessä deployssa. PR Preview on asetettu kaikille PR:ille, ja sen toiminta varmennetaan erillisellä testimuutoksella. Rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
 
 ## Vaihtoehdot
 
 - Jatkuvaa staging-verkkosivua ei ylläpidetä: PR Deploy Previewt tarjoavat muutoksen erillisen tarkistusosoitteen.[66]
-- Tuotantojulkaisuja ei käynnistetä suoraan CLI:llä, API:lla tai build hookilla; GitHubin PR- ja branch-protection-polku pysyy julkaisun porttina.[79][85]
+- Tuotantopolku on käytännössä GitHub PR → suojattu `main` → Netlify Git deploy. Netlify-asetus sallii kuitenkin tällä hetkellä myös CLI-, MCP- ja API-julkaisut; rajaa ne pois ennen agenttien tuotantojulkaisuoikeutta. Build-hookeja ei ole lisätty.[79][85]
 - Tuotantosalaisuuksia ei anneta PR-buildille, GitHub Actionsille tai frontend-bundleen. Netlify-muuttujat lisätään tarvittaessa vain oikeisiin server/runtime-scopeihin.[64][84]
 
 ## Seuraukset ja avoimet asiat
 
 - CI ajaa formatoinnin, lintin, TypeScript/Svelte-tarkistukset, testiryhmät, paikallisen Supabase-migraatiovalidoinnin, skeemalintin, buildin ja riippuvuustarkistukset.
-- Nykyinen Netlify-projekti on vielä ilman GitHub-yhteyttä ja deployta. OAuth kirjautuminen vaatii käyttäjän passkey-vahvistuksen; live Preview- tai tuotantojulkaisua ei vielä väitetä toimivaksi.
+- Netlify-Git-yhteys ja `main`-tuotantodeploy `6ac3e90949031a6686fe840d` on todennettu; deploy viittaa `main`-commitin `e824f34afe37daa8a2cd3e33e0b73c693f19673a` ja smoke-plugin onnistui. PR Preview testataan erillisessä PR:ssä.
 - Supabasen etäprojekteja, tuotantotunnuksia tai migraatioavaimia ei ole luotu. Tuotannon etämigraatiot eivät kuulu CI-jobiin.
 - Kustannus, alue ja erillisten staging-/tuotantotietokantojen luonti vahvistetaan ennen niiden provisiointia.
 
 ## Uudelleenarvioi, kun
 
-Netlify-Git-yhteys ja ensimmäinen Preview/tuotantodeploy on todennettu, Supabasen alue- ja kustannuspäätös on tehty tai hostingin kustannus, suorituskyky, käytettävyys tai tietojen sijaintivaatimukset muuttuvat.
+PR Deploy Preview on todennettu, Netlify-julkaisumenetelmät on rajattu Git-only-tilaan, Supabasen alue- ja kustannuspäätös on tehty tai hostingin kustannus, suorituskyky, käytettävyys tai tietojen sijaintivaatimukset muuttuvat.
 
 ## Sources
 

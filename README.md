@@ -26,7 +26,7 @@ The database suite uses a local Supabase stack only. See [database setup and tes
 
 ## Git and deployment
 
-Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs and the `quality`, `database` and `dependency-review` checks; `main` also blocks direct/force pushes. The repository is public and `main` is protected by required PR/check rules. The Netlify project exists, but GitHub OAuth is still waiting for passkey verification, so no PR Preview or production deployment is active yet. Once connected, the intended flow is human review, merge, production deploy and `/api/health` smoke test. See:
+Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs plus `quality`, `database`, `dependency-review` and `netlify/nordic-ski-intelligence/deploy-preview`; `main` blocks direct/force pushes. Production and PR #5 Deploy Preview both passed `/api/health` smoke tests. Netlify production deploys are restricted to the `main` Git branch; CLI/MCP/API cannot deploy to production. See:
 
 - [CI/CD and branch workflow](docs/architecture/cicd.md)
 - [Environments and secrets](docs/architecture/environments.md)

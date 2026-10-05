@@ -1,6 +1,6 @@
 # Ympäristöt
 
-**Tila:** GitHub-repo on julkinen ja `main` suojattu. Netlify-projekti on luotu, mutta sitä ei ole vielä yhdistetty GitHubiin eikä se ole julkaissut deployta. Staging- ja tuotantotietokantoja ei ole luotu.
+**Tila:** GitHub-repo on julkinen ja `main` suojattu. Netlify-Git-yhteys on aktiivinen; tuotantodeploy ja `/api/health`-smoke on todennettu. Supabasen staging- ja tuotantotietokantoja ei ole luotu.
 
 ## Valinta
 

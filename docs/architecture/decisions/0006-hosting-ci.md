@@ -1,44 +1,51 @@
-# ADR-0006: Host the web app on Netlify; use GitHub Actions for CI
+# ADR-0006: Netlify-hosting ja GitHub Actions CI
 
-- **Status:** Accepted for the Phase 0 recommendation; account/billing ownership remains unverified
-- **Date:** 2026-10-05
+- **Tila:** Hyväksytty. GitHubin `main`-suojaus on aktiivinen; Netlify-projekti on luotu mutta GitHub-yhdistäminen ja ensimmäinen deploy odottavat passkey-vahvistusta. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
+- **Päivä:** 2026-10-05
 
-## Context
+## Konteksti
 
-The product requires SSR, per-PR previews, separate staging/production data environments, safe AI-agent contributions and a controlled production path. The user already operates a Netlify-based project, but no Nordic Ski Intelligence Netlify site or cloud resource has been created.
+Tuote tarvitsee SvelteKit SSR:n, PR-kohtaiset esikatselut, erilliset staging- ja tuotantotietokannat sekä agenttimuutoksille turvallisen julkaisupolun. Käytössä on julkinen GitHub-repo `lassepehkonen/nordic-ski-intelligence`; Netlify-projekti on olemassa, mutta sitä ei ole vielä yhdistetty repoihin.
 
-## Decision
+## Päätös
 
-Deploy the SvelteKit web application to **Netlify** using the SvelteKit adapter. Use Netlify Deploy Previews for PR review and GitHub Actions as the required quality gate. Netlify documents support for SvelteKit rendering modes/API endpoints and previews from pull/merge requests.[31][32]
+Web-sovellus julkaistaan Netlifyyn SvelteKit-adapterilla; Netlifyn virallinen ohje kattaa SvelteKit-asennuksen.[37] PR-kohtaisia Deploy Preview -julkaisuja käytetään UI:n katselmointiin, ja tuotantohaara on `main`.[66][79]
 
-Use `main` for production, require CI and human review, and keep staging in a separate Supabase project. Production secrets are scoped to production and are not provided to AI coding agents or preview builds. Production database changes are versioned migrations with an explicit release gate.
+GitHubin `main`-haara vaatii PR:n ja seuraavat tarkistukset: `quality`, `database` ja `dependency-review`. Suorat pushit, force-pushit ja ylläpitäjien poikkeukset on estetty; lineaarinen historia ja keskustelujen ratkaisu vaaditaan. Nämä asetukset on luettu takaisin GitHubin branch protection -rajapinnasta.[76]
 
-GitHub Actions handles typecheck, lint, tests, translation completeness, migration checks and build. It is **not** the live conditions scheduler; schedule events can be delayed during high load.[24]
+Repositoriossa on yksi yhteistyökumppani, joten vaadittujen hyväksyntöjen määrä on nolla. Ihminen tarkistaa silti diffi- ja Preview-sisällön ennen mergeä; agentti ei mergeä ilman käyttäjän nimenomaista pyyntöä.
 
-## Alternatives considered
+PR-esikatselu korvaa erillisen staging-verkkosivun MVP:ssä. Staging-tietokanta on edelleen perusteltu ennen tuotantointegraatioita, mutta se luodaan vasta erillisen kustannushyväksynnän jälkeen. CI:n tietokantatestit käyttävät paikallista Supabase-stackia ja vain migraatioita.[59][70]
 
-- **Cloudflare Pages/Workers:** a viable SvelteKit adapter target with efficient edge delivery; choose instead if the organization deliberately consolidates web and collector operations on Cloudflare.[36]
-- **Vercel:** viable through the official SvelteKit adapter, but the published Pro starting plan is currently $20/month plus usage; no advantage over the existing Netlify workflow has been established.[37][23]
-- **Netlify-only CI and scheduled ingestion:** host builds are useful, but scheduled functions have limits and tie ingestion deployment to web publication; the selected collector architecture uses Supabase Cron instead.[15][16]
+Kun Netlify-Git-yhteys on valmis, PR:t tuottavat Deploy Previewn ja `main`-haaran merge käynnistää tuotantobuildin. `onSuccess`-plugin tekee deployn jälkeisen `/api/health`-smoken; rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
 
-## Cost and consequences
+## Vaihtoehdot
 
-Netlify currently lists Free and Personal ($9/month) plans, credit-based usage and a CDN; recheck usage credit consumption and plan terms before selecting the production tier.[33] Personal is included in the initial planning baseline, not a claim that it is mandatory for every deployment.
+- Jatkuvaa staging-verkkosivua ei ylläpidetä: PR Deploy Previewt tarjoavat muutoksen erillisen tarkistusosoitteen.[66]
+- Tuotantojulkaisuja ei käynnistetä suoraan CLI:llä, API:lla tai build hookilla; GitHubin PR- ja branch-protection-polku pysyy julkaisun porttina.[79][85]
+- Tuotantosalaisuuksia ei anneta PR-buildille, GitHub Actionsille tai frontend-bundleen. Netlify-muuttujat lisätään tarvittaessa vain oikeisiin server/runtime-scopeihin.[64][84]
 
-This choice minimizes change to the user's existing Netlify workflow while keeping database and collector services separately deployable. It creates a multi-vendor stack (Netlify + Supabase + map provider), so keep the application portable and avoid host-specific services in domain code.
+## Seuraukset ja avoimet asiat
 
-## Revisit when
+- CI ajaa formatoinnin, lintin, TypeScript/Svelte-tarkistukset, testiryhmät, paikallisen Supabase-migraatiovalidoinnin, skeemalintin, buildin ja riippuvuustarkistukset.
+- Nykyinen Netlify-projekti on vielä ilman GitHub-yhteyttä ja deployta. OAuth kirjautuminen vaatii käyttäjän passkey-vahvistuksen; live Preview- tai tuotantojulkaisua ei vielä väitetä toimivaksi.
+- Supabasen etäprojekteja, tuotantotunnuksia tai migraatioavaimia ei ole luotu. Tuotannon etämigraatiot eivät kuulu CI-jobiin.
+- Kustannus, alue ja erillisten staging-/tuotantotietokantojen luonti vahvistetaan ennen niiden provisiointia.
 
-Reconsider Cloudflare or another host if Netlify runtime region, cost/credit use, SSR performance, observability, support or residency becomes unsuitable. Do not switch simply to combine web and data jobs if that couples source freshness to website release cadence.
+## Uudelleenarvioi, kun
+
+Netlify-Git-yhteys ja ensimmäinen Preview/tuotantodeploy on todennettu, Supabasen alue- ja kustannuspäätös on tehty tai hostingin kustannus, suorituskyky, käytettävyys tai tietojen sijaintivaatimukset muuttuvat.
 
 ## Sources
 
-[15] https://developers.cloudflare.com/workers/configuration/cron-triggers — Cron Triggers · Cloudflare Workers docs
-[16] https://developers.cloudflare.com/workers/platform/limits — Limits · Cloudflare Workers docs
-[23] https://railway.com/pricing — Pricing | Railway
-[24] https://vercel.com/docs/cron-jobs — Cron Jobs
-[31] https://operations.osmfoundation.org/policies/tiles — Tile Usage Policy
-[32] https://inlang.com/m/dxnzrydw/paraglide-sveltekit-i18n — SvelteKit - Paraglide JS
-[33] https://inlang.com/m/gerre34r/library-inlang-paraglideJs/changelog — inlang/paraglide-js
-[36] https://inlang.com/m/gerre34r/library-inlang-paraglideJs/strategy — Strategy - Paraglide JS
 [37] https://docs.netlify.com/build/frameworks/framework-setup-guides/sveltekit — SvelteKit on Netlify
+[59] https://supabase.com/docs/guides/local-development/cli-workflows — Local development workflow | Supabase Docs
+[64] https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments — GitHub Actions deployments and environments
+[66] https://docs.netlify.com/deploy/deploy-types/deploy-previews — Netlify Deploy Previews
+[70] https://supabase.com/docs/guides/local-development/cli/testing-and-linting — Supabase testing and linting
+[72] https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview — Netlify manage deploys and rollbacks
+[76] https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/managing-a-branch-protection-rule — GitHub branch protection rules
+[79] https://docs.netlify.com/build/git-workflows/overview — Netlify Git workflows and production protection
+[83] https://docs.netlify.com/extend/develop-and-share/develop-build-plugins — Develop Netlify Build Plugins
+[84] https://docs.netlify.com/build/configure-builds/environment-variables — Netlify build environment variables
+[85] https://docs.netlify.com/build/configure-builds/build-hooks — Netlify Build hooks

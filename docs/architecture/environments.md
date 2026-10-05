@@ -1,5 +1,7 @@
 # Ympäristöt
 
+**Tila:** GitHub-repo on julkinen ja `main` suojattu. Netlify-projekti on luotu, mutta sitä ei ole vielä yhdistetty GitHubiin eikä se ole julkaissut deployta. Staging- ja tuotantotietokantoja ei ole luotu.
+
 ## Valinta
 
 MVP:lle ei tarvita erillistä jatkuvasti julkaistua staging-verkkosivua tai `staging`-Git-haaraa. PR-kohtainen Netlify Deploy Preview toimii käyttöliittymän katselmointiympäristönä; GitHub Actions ajaa tietokantatestit eristetyllä paikallisella Supabase-stackilla.[66][69]

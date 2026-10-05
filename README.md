@@ -1,6 +1,6 @@
 # Nordic Ski Intelligent
 
-Nordic Ski Intelligent is a Nordic ski-resort information product. The current repository contains the Phase 2 domain/database foundation and a small Phase 3 SvelteKit shell used to verify CI, Netlify previews and deployment smoke tests. **It does not yet contain product UI, live resort data, collectors, a scoring engine or a production Supabase project.**
+Nordic Ski Intelligent is a Nordic ski-resort information product. The repository contains the Phase 2 domain/database foundation and a small Phase 3 SvelteKit shell for CI and deployment verification. **It does not yet contain product UI, live resort data, collectors, a scoring engine or a production Supabase project.**
 
 ## Development
 
@@ -26,7 +26,7 @@ The database suite uses a local Supabase stack only. See [database setup and tes
 
 ## Git and deployment
 
-Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub Actions checks the change; Netlify provides a PR Deploy Preview. A human reviews the diff and preview before merging. Netlify deploys `main` to production and runs the post-deploy `/api/health` smoke test. See:
+Use short-lived `feat/*`, `fix/*`, `docs/*` or `ci/*` branches, then open a PR to `main`. GitHub requires PRs and the `quality`, `database` and `dependency-review` checks; `main` also blocks direct/force pushes. The repository is public and `main` is protected by required PR/check rules. The Netlify project exists, but GitHub OAuth is still waiting for passkey verification, so no PR Preview or production deployment is active yet. Once connected, the intended flow is human review, merge, production deploy and `/api/health` smoke test. See:
 
 - [CI/CD and branch workflow](docs/architecture/cicd.md)
 - [Environments and secrets](docs/architecture/environments.md)

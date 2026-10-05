@@ -13,7 +13,7 @@ Netlify ajaa `onSuccess`-hookin vasta onnistuneen deployn jälkeen; se ei voi es
 
 ## Netlify-asetukset
 
-`netlify.toml` määrittää SvelteKit-buildin, Node-version ja paikallisen smoke-pluginin. Sivuston ensimmäisessä käyttöönotossa Netlify-projekti liitetään yksityiseen GitHub-repoon; tuotantohaaraksi asetetaan `main`, PR Deploy Previews kytketään päälle ja Git-pohjaisen tuotantojulkaisun suojaus varmistetaan. Repo-linkitys antaa Netlifylle pääsyn valittuun lähdekoodiin, joten liitä vain tämä projekti.[80]
+`netlify.toml` määrittää SvelteKit-buildin, Node-version ja paikallisen smoke-pluginin. Netlify-projekti on luotu ja sen tarkoitettu lähde on julkinen GitHub-repo; GitHub OAuth -yhdistäminen odottaa passkey-vahvistusta, eikä sivustolla ole vielä deployta. Yhdistäessä tuotantohaaraksi asetetaan `main` ja PR Deploy Previewt otetaan käyttöön. Repo-linkitys antaa Netlifyn GitHub-integraatiolle pääsyn lähdekoodiin.[80]
 
 Erillisiä build-hookeja tai token-pohjaista suoraa tuotantojulkaisua ei lisätä; tuotanto alkaa vain suojatusta `main`-haaran Git-julkaisusta.[79][85]
 
@@ -28,7 +28,7 @@ Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuut
 
 ## Julkaisun raportointi
 
-Netlify näyttää build/deploy-lokin, julkaisun URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Netlify Previewn. Mergetty PR käynnistää automaattisen tuotantobuildin. Julkaisua ei raportoida onnistuneeksi ennen kuin Netlifyn deploy-tila ja smoke-tulos on luettu takaisin.
+Kun GitHub-yhteys on valmis, Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. Suojattuun `main`-haaraan mergetty PR käynnistää tuotantobuildin. Julkaisua ei raportoida onnistuneeksi ennen kuin deploy-tila ja smoke-tulos on luettu takaisin.
 
 Erillistä sähköposti-/chat-ilmoitusintegraatiota ei tässä vaiheessa konfiguroida; Netlifyn deploy-notifications-palvelu on mahdollinen myöhempi lisä, mutta nykyinen raportointipolku on deploy-loki ja GitHub-status.[67]
 

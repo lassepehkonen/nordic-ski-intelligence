@@ -1,6 +1,6 @@
 # Kehitys, haaramalli ja CI/CD
 
-**Tila:** Vaiheen 3 toteutus. Netlify- ja GitHub-etäasetusten tarkistus kirjataan erikseen; tuotannon Supabase-projektia ei ole luotu.
+**Tila:** Julkinen GitHub-repo ja `main`-haaran suojaus on otettu käyttöön ja luettu takaisin. Alustava GitHub Actions -ajo onnistui. Netlify-projekti on luotu, mutta GitHub OAuth -yhdistäminen on vielä kesken; Supabasen staging- tai tuotantoprojektia ei ole luotu.
 
 ## Julkaisupolku
 
@@ -21,10 +21,10 @@ Nykyinen SvelteKit-skeleton on generoitu kevyestä TypeScript-pohjasta Netlify-a
 ## Haarat ja PR:t
 
 - Käytä lyhyitä `feat/<asia>`, `fix/<asia>`, `docs/<asia>` tai `ci/<asia>` -haaroja.
-- Kaikki muutokset, myös agenttien tekemät, toimitetaan PR:nä `main`-haaraan. Suorat pushit ja force-pushit `main`-haaraan estetään repoasetuksilla.
+- Kaikki muutokset, myös agenttien tekemät, toimitetaan PR:nä `main`-haaraan. GitHubin suojaus estää suorat pushit sekä force-pushit.
 - PR:n pitää odottaa näitä CI-tarkistuksia: `quality`, `database` ja `dependency-review`. Netlify Preview tarkistetaan erikseen ennen mergeä.
-- Solo-ylläpitäjän MVP:ssä vaaditaan PR ja vihreät tarkistukset; toista hyväksyjää ei aseteta pakolliseksi ennen kuin toinen katselmoija on nimetty. PR:n tekijä tai ylläpitäjä tarkistaa diffi- ja preview-sisällön ennen mergeä.
-- Ota GitHubin sääntöjen mukaan käyttöön lineaarinen historia, keskustelujen ratkaisu sekä ylläpitäjien suojaus. Yksityisten repositorien suojausominaisuuksien saatavuus riippuu GitHub-tilin suunnitelmasta; varmista asetukset API:sta ennen kuin kytket automaattisen tuotantojulkaisun päälle.[76][77][78]
+- Repo vaatii PR:n ja vihreät tarkistukset. GitHub-asetuksen hyväksyntämäärä on `0`, koska repositoriolla on yksi yhteistyökumppani; siksi ihmisen katselmointi (diffi, keskustelut ja Preview) on työskentelysääntö, ei pakotettu hyväksyntäklikkaus. Agentti ei mergeä ilman käyttäjän nimenomaista pyyntöä.
+- `main`-haarassa on API:sta luettu suojaussääntö: vaaditaan PR ja checkit `quality`, `database`, `dependency-review`; haara pidetään ajan tasalla; ylläpitäjien poikkeukset, force-pushit ja haaran poisto on estetty; lineaarinen historia ja keskustelujen ratkaisu ovat päällä. GitHubin branch protection- ja ruleset-mallit tukevat näitä sääntöjä; tässä käytetään branch protection -asetusta.[76][77][78]
 
 ## CI-tarkistukset
 
@@ -50,7 +50,7 @@ Tuotantosalaisuuksia ei anneta PR:lle, preview-buildille, GitHub Actionsille tai
 
 - Tuotannon/stagingin Supabase-projekteja tai niiden tunnuksia ei ole luotu. Tuotannon migraatioiden etäjulkaisu pysyy suljettuna, kunnes projektien kustannukset on hyväksytty ja ympäristöt on konfiguroitu.
 - Scoring-moottorin, lähdeadapterien ja varsinaisen tuotteen API:n TypeScript-testit lisätään niiden toteutuksen yhteydessä. Nykyiset tyhjät testiluokat ohitetaan näkyvästi `--passWithNoTests`-valitsimella; ne eivät väitä testikattavuutta. Domain-skeeman nykyiset 72 pgTAP-väitettä ajetaan oikeasti.
-- Yksityisen GitHub-repon branch protection ja Netlify-Git-kytkentä ovat ulkoisia repo-/sivustoasetuksia: niitä ei saa pitää valmiina ennen kuin ne luetaan takaisin palvelusta.
+- GitHubin `main`-suojaus on luettu takaisin. Netlify-projekti on luotu, mutta GitHub-yhteys odottaa passkey-vahvistusta; Deploy Preview- tai tuotantojulkaisua ei ole vielä todennettu.
 
 ## Sources
 

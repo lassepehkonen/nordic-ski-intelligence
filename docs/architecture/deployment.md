@@ -28,7 +28,7 @@ Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuut
 
 ## Julkaisun raportointi
 
-Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. `main`-haaran tuotantodeploy ja `/api/health`-smoke on luettu takaisin onnistuneiksi. PR Deploy Previewn erillinen onnistuminen varmennetaan seuraavalla PR:llä ennen kuin pipeline merkitään kokonaan valmiiksi.
+Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. Tuotantodeploy `6ac3e90949031a6686fe840d` ja PR #5 Preview `6ac3eb339a8a3d0008d0ae7d` olivat `ready`; molempien smoke-plugin onnistui ja `/api/health` palautti HTTP 200 sekä `{"status":"ok"}`. PR Preview -status vaaditaan nyt ennen `main`-mergeä.
 
 Erillistä sähköposti-/chat-ilmoitusintegraatiota ei tässä vaiheessa konfiguroida; Netlifyn deploy-notifications-palvelu on mahdollinen myöhempi lisä, mutta nykyinen raportointipolku on deploy-loki ja GitHub-status.[67]
 

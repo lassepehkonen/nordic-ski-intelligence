@@ -1,6 +1,6 @@
 # Kehitys, haaramalli ja CI/CD
 
-**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset on otettu käyttöön ja luettu takaisin. PR #4 yhdistettiin; sen kaikki vaaditut tarkistukset ja `main`-haaran CI onnistuivat. Netlify on yhdistetty tähän GitHub-repoon: `main`-haaran tuotantodeploy on valmis ja post-deploy-smoke onnistui. PR Deploy Previewn erillinen testi on vielä tekemättä; Supabasen etäprojekteja ei ole luotu.
+**Tila:** Julkinen GitHub-repo, `main`-haaran suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat käytössä. Netlify on yhdistetty repoihin; tuotantodeploy ja PR #5 Deploy Preview onnistuivat, ja molempien `/api/health`-smoke läpäisi. `main` vaatii nyt myös Netlify Deploy Preview -checkin. Supabasen etäprojekteja ei ole luotu.
 
 ## Julkaisupolku
 
@@ -22,9 +22,9 @@ Nykyinen SvelteKit-skeleton on generoitu kevyestä TypeScript-pohjasta Netlify-a
 
 - Käytä lyhyitä `feat/<asia>`, `fix/<asia>`, `docs/<asia>` tai `ci/<asia>` -haaroja.
 - Kaikki muutokset, myös agenttien tekemät, toimitetaan PR:nä `main`-haaraan. GitHubin suojaus estää suorat pushit sekä force-pushit.
-- PR:n pitää odottaa näitä CI-tarkistuksia: `quality`, `database` ja `dependency-review`. Netlify Preview tarkistetaan erikseen ennen mergeä.
+- PR:n pitää läpäistä `quality`, `database`, `dependency-review` ja `netlify/nordic-ski-intelligence/deploy-preview`. Netlify Preview on siten pakollinen merge-portti.
 - Repo vaatii PR:n ja vihreät tarkistukset. GitHub-asetuksen hyväksyntämäärä on `0`, koska repositoriolla on yksi yhteistyökumppani; siksi ihmisen katselmointi (diffi, keskustelut ja Preview) on työskentelysääntö, ei pakotettu hyväksyntäklikkaus. Agentti ei mergeä ilman käyttäjän nimenomaista pyyntöä.
-- `main`-haarassa on API:sta luettu suojaussääntö: vaaditaan PR ja checkit `quality`, `database`, `dependency-review`; haara pidetään ajan tasalla; ylläpitäjien poikkeukset, force-pushit ja haaran poisto on estetty; lineaarinen historia ja keskustelujen ratkaisu ovat päällä. GitHubin branch protection- ja ruleset-mallit tukevat näitä sääntöjä; tässä käytetään branch protection -asetusta.[76][77][78]
+- `main`-haarassa on API:sta luettu suojaussääntö: vaaditaan PR sekä checkit `quality`, `database`, `dependency-review` ja `netlify/nordic-ski-intelligence/deploy-preview`; haara pidetään ajan tasalla; ylläpitäjien poikkeukset, force-pushit ja haaran poisto on estetty; lineaarinen historia ja keskustelujen ratkaisu ovat päällä. Ihmishyväksyntöjen määrä on `0` yhden yhteistyökumppanin vuoksi, joten käyttäjä tarkistaa Previewn ennen mergeä.[76][77][78]
 
 ## CI-tarkistukset
 
@@ -50,7 +50,7 @@ Tuotantosalaisuuksia ei anneta PR:lle, preview-buildille, GitHub Actionsille tai
 
 - Tuotannon/stagingin Supabase-projekteja tai niiden tunnuksia ei ole luotu. Tuotannon migraatioiden etäjulkaisu pysyy suljettuna, kunnes projektien kustannukset on hyväksytty ja ympäristöt on konfiguroitu.
 - Scoring-moottorin, lähdeadapterien ja varsinaisen tuotteen API:n TypeScript-testit lisätään niiden toteutuksen yhteydessä. Nykyiset tyhjät testiluokat ohitetaan näkyvästi `--passWithNoTests`-valitsimella; ne eivät väitä testikattavuutta. Domain-skeeman nykyiset 72 pgTAP-väitettä ajetaan oikeasti.
-- GitHubin `main`-suojaus on luettu takaisin. Netlify-Git-yhteys ja `main`-tuotantojulkaisu on todennettu; smoke-plugin onnistui. PR Deploy Preview testataan erikseen seuraavassa PR:ssä. Netlify-asetus sallii tällä hetkellä myös CLI-, MCP- ja API-julkaisut tuotantoon; rajoita julkaisut Git-workflow’hun ennen kuin agenteille annetaan tuotantojulkaisuoikeus.
+- Netlify-tuotantodeploy ja PR #5 Deploy Preview on todennettu (molemmissa smoke-plugin onnistui). Netlify Preview -status on vaadittu `main`-check. Netlify-asetus sallii silti CLI-, MCP- ja API-julkaisut tuotantoon; Git-only-rajaus on vielä tehtävä ennen agenttien tuotantojulkaisuoikeutta.
 
 ## Sources
 

@@ -1,6 +1,6 @@
 # ADR-0006: Netlify-hosting ja GitHub Actions CI
 
-- **Tila:** Hyväksytty. GitHubin `main`-suojaus, riippuvuusgraafi ja haavoittuvuusilmoitukset ovat aktiivisia. Netlify on yhdistetty repoihin; ensimmäinen `main`-tuotantodeploy ja smoke-tarkistus onnistuivat. PR Previewn erillinen testi on kesken; Supabasen staging- ja tuotantoprojekteja ei ole luotu.
+- **Tila:** Hyväksytty. Netlify-Git-yhteys, tuotantodeploy ja PR #5 Deploy Preview on todennettu; `main` vaatii CI:n lisäksi Preview-checkin. Netlifyn suorat CLI/MCP/API-julkaisut ovat yhä sallittuja ja pitää rajata pois ennen agenttien tuotantojulkaisuoikeutta. Supabasen staging- ja tuotantoprojekteja ei ole luotu.
 - **Päivä:** 2026-10-05
 
 ## Konteksti
@@ -11,13 +11,13 @@ Tuote tarvitsee SvelteKit SSR:n, PR-kohtaiset esikatselut, erilliset staging- ja
 
 Web-sovellus julkaistaan Netlifyyn SvelteKit-adapterilla; Netlifyn virallinen ohje kattaa SvelteKit-asennuksen.[37] PR-kohtaisia Deploy Preview -julkaisuja käytetään UI:n katselmointiin, ja tuotantohaara on `main`.[66][79]
 
-GitHubin `main`-haara vaatii PR:n ja seuraavat tarkistukset: `quality`, `database` ja `dependency-review`. Suorat pushit, force-pushit ja ylläpitäjien poikkeukset on estetty; lineaarinen historia ja keskustelujen ratkaisu vaaditaan. Nämä asetukset on luettu takaisin GitHubin branch protection -rajapinnasta.[76]
+GitHubin `main`-haara vaatii PR:n ja tarkistukset `quality`, `database`, `dependency-review` sekä `netlify/nordic-ski-intelligence/deploy-preview`. Suorat pushit, force-pushit ja ylläpitäjien poikkeukset on estetty; lineaarinen historia ja keskustelujen ratkaisu vaaditaan. Nämä asetukset on luettu takaisin GitHubin branch protection -rajapinnasta.[76]
 
 Repositoriossa on yksi yhteistyökumppani, joten vaadittujen hyväksyntöjen määrä on nolla. Ihminen tarkistaa silti diffi- ja Preview-sisällön ennen mergeä; agentti ei mergeä ilman käyttäjän nimenomaista pyyntöä.
 
 PR-esikatselu korvaa erillisen staging-verkkosivun MVP:ssä. Staging-tietokanta on edelleen perusteltu ennen tuotantointegraatioita, mutta se luodaan vasta erillisen kustannushyväksynnän jälkeen. CI:n tietokantatestit käyttävät paikallista Supabase-stackia ja vain migraatioita.[59][70]
 
-Netlify-Git-yhteys käynnistää tuotantobuildin `main`-haarasta; `onSuccess`-pluginin `/api/health`-smoke onnistui ensimmäisessä deployssa. PR Preview on asetettu kaikille PR:ille, ja sen toiminta varmennetaan erillisellä testimuutoksella. Rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
+Netlify-Git-yhteys käynnistää tuotantobuildin `main`-haarasta; tuotantodeploy `6ac3e90949031a6686fe840d` oli valmis. PR #5 Deploy Preview `6ac3eb339a8a3d0008d0ae7d` oli valmis; molempien `onSuccess`-pluginin `/api/health`-smoke onnistui. Preview-check on nyt vaadittu ennen mergeä. Rollback tehdään palauttamalla viimeinen toimiva deploy tai revert-PR:llä.[72][83]
 
 ## Vaihtoehdot
 
@@ -28,7 +28,7 @@ Netlify-Git-yhteys käynnistää tuotantobuildin `main`-haarasta; `onSuccess`-pl
 ## Seuraukset ja avoimet asiat
 
 - CI ajaa formatoinnin, lintin, TypeScript/Svelte-tarkistukset, testiryhmät, paikallisen Supabase-migraatiovalidoinnin, skeemalintin, buildin ja riippuvuustarkistukset.
-- Netlify-Git-yhteys ja `main`-tuotantodeploy `6ac3e90949031a6686fe840d` on todennettu; deploy viittaa `main`-commitin `e824f34afe37daa8a2cd3e33e0b73c693f19673a` ja smoke-plugin onnistui. PR Preview testataan erillisessä PR:ssä.
+- Netlify-Git-yhteys, tuotantodeploy `6ac3e90949031a6686fe840d` ja PR #5 Deploy Preview `6ac3eb339a8a3d0008d0ae7d` on todennettu; kummankin deployn smoke-plugin onnistui. `main` vaatii nyt myös Netlify Preview -checkin.
 - Supabasen etäprojekteja, tuotantotunnuksia tai migraatioavaimia ei ole luotu. Tuotannon etämigraatiot eivät kuulu CI-jobiin.
 - Kustannus, alue ja erillisten staging-/tuotantotietokantojen luonti vahvistetaan ennen niiden provisiointia.
 

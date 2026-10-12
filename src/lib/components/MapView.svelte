@@ -41,9 +41,9 @@
 			accent: read('--accent', '#0d5b6b'),
 			good: read('--snow', '#2c6a4c'),
 			muted: read('--ink-3', '#6b7c85'),
-			land: read('--surface-3', '#e4eaeb'),
-			landLine: read('--line-2', '#c6d1d3'),
-			border: read('--ink-3', '#6b7c85')
+			land: read('--map-land', '#f8faf9'),
+			landLine: read('--map-land-line', '#b6c5ca'),
+			border: read('--map-border', '#93a7ad')
 		};
 	}
 

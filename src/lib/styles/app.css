@@ -13,6 +13,11 @@
 	--surface: #ffffff;
 	--surface-2: #eef2f2;
 	--surface-3: #e4eaeb;
+	/* Map palette: land, water and lines must separate clearly at Nordic zoom levels. */
+	--map-water: #dbe6ed;
+	--map-land: #f8faf9;
+	--map-land-line: #b6c5ca;
+	--map-border: #93a7ad;
 	--ink: #0f1a1f;
 	--ink-2: #3d4f58;
 	--ink-3: #6b7c85;
@@ -46,6 +51,10 @@
 		--surface: #161e22;
 		--surface-2: #1c262b;
 		--surface-3: #243036;
+		--map-water: #0b1418;
+		--map-land: #1e2a2f;
+		--map-land-line: #3a525c;
+		--map-border: #5b7681;
 		--ink: #edf3f4;
 		--ink-2: #b3c2c8;
 		--ink-3: #84969d;
@@ -730,7 +739,7 @@ td.best {
 	border: 1px solid var(--line);
 	border-radius: var(--radius-lg);
 	overflow: hidden;
-	background: var(--surface-2);
+	background: var(--map-water);
 	min-height: 320px;
 	height: clamp(320px, 46vh, 520px);
 	box-shadow: var(--shadow-2);
@@ -739,11 +748,11 @@ td.best {
 .map-canvas {
 	position: absolute;
 	inset: 0;
-	background: var(--surface-2);
+	background: var(--map-water);
 }
 
 .map-frame .leaflet-container {
-	background: var(--surface-2);
+	background: var(--map-water);
 	font-family: var(--font-sans);
 }
 

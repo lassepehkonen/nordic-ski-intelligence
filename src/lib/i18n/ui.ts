@@ -16,6 +16,7 @@ import type {
 	SnowQuality
 } from '../domain/types.js';
 import type { SortKey } from '../domain/selectors.js';
+import { comparisonHref } from '../domain/selectors.js';
 import { LOCALES, isLocale, type Locale } from './locales.js';
 
 export { LOCALES, isLocale };
@@ -164,4 +165,12 @@ export function alternateHrefs(path: string): { locale: Locale; href: string }[]
 		locale,
 		href: localizeHref(canonical, { locale })
 	}));
+}
+
+/**
+ * Locale-prefixed comparison link that adds or removes one resort from the current selection.
+ * Keeping the localization here means no call site can leak an unprefixed `/compare` link.
+ */
+export function compareLink(selection: readonly string[], slug: string, locale?: Locale): string {
+	return href(comparisonHref(selection, slug), locale);
 }

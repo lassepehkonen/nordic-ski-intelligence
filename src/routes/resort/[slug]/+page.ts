@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { createPreviewRepositories } from '#lib/data/repository.js';
-import { comparisonHref, parseComparisonSelection } from '#lib/domain/selectors.js';
-import { currentLocale } from '#lib/i18n/ui.js';
+import { parseComparisonSelection } from '#lib/domain/selectors.js';
+import { compareLink, currentLocale } from '#lib/i18n/ui.js';
 import { m } from '#lib/paraglide/messages.js';
 import { buildPageMeta, resortJsonLd, siteOrigin } from '#lib/seo/meta.js';
 import type { PageLoad } from './$types';
@@ -30,7 +30,7 @@ export const load: PageLoad = ({ params, url }) => {
 		rating,
 		metrics,
 		sources: repositories.sourcesFor(resort, conditions),
-		compareHref: comparisonHref(selected, resort.id),
+		compareHref: compareLink(selected, resort.id, locale),
 		meta: buildPageMeta({
 			path,
 			title: m.meta_resort_title({ resort: translation.name }),

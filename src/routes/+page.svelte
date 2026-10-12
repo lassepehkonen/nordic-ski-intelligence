@@ -4,13 +4,14 @@
 	import ResortCard from '#lib/components/ResortCard.svelte';
 	import ResortMap from '#lib/components/ResortMap.svelte';
 	import SeoHead from '#lib/components/SeoHead.svelte';
-	import { comparisonHref } from '#lib/domain/selectors.js';
+	import { currentLocale, compareLink } from '#lib/i18n/ui.js';
 	import { m } from '#lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const compareHrefFor = (slug: string) => comparisonHref(data.comparisonSelection, slug);
+	const compareHrefFor = (slug: string) =>
+		compareLink(data.comparisonSelection, slug, currentLocale());
 </script>
 
 <SeoHead meta={data.meta} />

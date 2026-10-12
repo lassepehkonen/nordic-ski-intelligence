@@ -1,14 +1,13 @@
 import { createPreviewRepositories } from '#lib/data/repository.js';
 import {
 	bestByConditions,
-	comparisonHref,
 	filterResorts,
 	freshestSnow,
 	parseComparisonSelection,
 	parseFilters,
 	sortResorts
 } from '#lib/domain/selectors.js';
-import { currentLocale } from '#lib/i18n/ui.js';
+import { compareLink, currentLocale } from '#lib/i18n/ui.js';
 import { m } from '#lib/paraglide/messages.js';
 import { toMapPoints } from '#lib/presentation/map.js';
 import { buildPageMeta, siteOrigin } from '#lib/seo/meta.js';
@@ -31,9 +30,12 @@ export const load: PageLoad = ({ url }) => {
 		filtered,
 		comparisonSelection: selectedForComparison,
 		totalCount: allItems.length,
-		best: bestByConditions(allItems, 3),
-		fresh: freshestSnow(allItems, 3),
-		mapPoints: toMapPoints(filtered, locale, (slug) => comparisonHref(selectedForComparison, slug)),
+		// Highlights follow the active filters, so a filtered or searched view stays coherent.
+		best: bestByConditions(filtered, 3),
+		fresh: freshestSnow(filtered, 3),
+		mapPoints: toMapPoints(filtered, locale, (slug) =>
+			compareLink(selectedForComparison, slug, locale)
+		),
 		meta: buildPageMeta({
 			path: '/',
 			title: m.meta_home_title(),

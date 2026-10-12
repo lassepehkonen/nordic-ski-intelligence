@@ -30,6 +30,8 @@ Buildin pitää onnistua ilman `SUPABASE_SERVICE_ROLE_KEY`-, tietokantasalaisuut
 
 Netlify näyttää build/deploy-lokin, deploy-URL:n ja smoke-pluginin tuloksen; GitHub PR näyttää CI-checkit ja Previewn. Ensimmäinen `main`-tuotantodeploy ja PR #5 Preview olivat `ready`; molempien smoke-plugin onnistui ja `/api/health` palautti HTTP 200 sekä `{"status":"ok"}`. PR Preview -status vaaditaan nyt ennen `main`-mergeä.
 
+Vaihe 7 (PR #6, haara `feat/phase-7-product-ui-i18n`) varmennettiin Deploy Preview'ssa `https://deploy-preview-6--nordic-ski-intelligence.netlify.app`: kaikki neljä kieltä vastaavat (`/fi`, `/en`, `/sv`, `/no`), etuliitteetön juuri ohjaa ratkaistuun kieleen, kohdesivut ja vertailu toimivat, `sitemap.xml` ja `robots.txt` palvelevat oikein ja `/api/health` palauttaa `{"status":"ok"}`. Tuotantoon ei ole julkaistu: Netlifyn Enforce deployment methods on Git-only `main`-haaralle, joten vaiheen näkyvä lopputulos on PR-preview, kunnes PR mergetään.
+
 Erillistä sähköposti-/chat-ilmoitusintegraatiota ei tässä vaiheessa konfiguroida; Netlifyn deploy-notifications-palvelu on mahdollinen myöhempi lisä, mutta nykyinen raportointipolku on deploy-loki ja GitHub-status.[67]
 
 ## Nykyinen raja

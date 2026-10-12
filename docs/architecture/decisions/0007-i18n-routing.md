@@ -1,6 +1,6 @@
 # ADR-0007: Use Paraglide JS with localized SvelteKit routes
 
-- **Status:** Accepted for the Phase 0 recommendation
+- **Status:** Accepted; URL strategy and metadata implemented in Phase 7
 - **Date:** 2026-10-05
 
 ## Context
@@ -27,6 +27,27 @@ For each indexed translation, emit the correct canonical URL and reciprocal `hre
 - Locale-aware formatting uses `Intl` with the active locale and explicit product unit preferences.
 - Resort editorial translations remain distinct records from UI messages and may be incomplete independently per resort/locale.
 - CI checks message keys and required content fields; the acceptable translation-completeness threshold is established before the first public release.
+
+## Implementation notes (Phase 7)
+
+- Locale prefixes are declared once in `project.inlang/paraglide.config.js` (`urlPatterns`): every
+  locale is prefixed and the unprefixed root is a locale-detection entry point that 308-redirects
+  to the resolved locale. `routeStrategies` excludes `/api/*`, `/robots.txt` and `/sitemap.xml`
+  from the locale middleware so machine endpoints never receive a locale redirect.
+- `src/hooks.ts` (`reroute`) strips the prefix before route matching, so page components and their
+  load functions only ever see canonical paths; links are built through `#lib/i18n/ui`, which
+  localizes and de-localizes hrefs.
+- `src/hooks.server.ts` runs the Paraglide middleware, resolves the locale (URL prefix →
+  `Accept-Language` → base locale) and substitutes `%lang%`/`%dir%` in `src/app.html`.
+- Each page's load function returns metadata built by `src/lib/seo/meta.ts`: a self-referencing
+  canonical URL, reciprocal `hreflang` alternates for all four locales plus `x-default` (English),
+  `og:locale`/`og:locale:alternate`, and schema.org `SkiResort` on resort pages. `sitemap.xml`
+  lists every localized page with its alternates; the dynamic `robots.txt` points at it.
+- Canonical and alternate URLs use the serving origin, so a preview deploy self-references the host
+  it is served from; a custom domain then needs no rebuild-time configuration.
+- The completeness gate referenced above is implemented as `tests/domain/i18n-catalog.spec.ts`:
+  identical key sets across locales, no empty values, and identical placeholder sets per key (so
+  no interpolation can silently vanish in one language).
 
 ## Revisit when
 

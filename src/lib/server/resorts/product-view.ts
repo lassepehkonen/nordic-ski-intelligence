@@ -132,6 +132,8 @@ export interface ResortView {
 		readonly sourceUpdatedAt: string | null;
 		readonly current: ForecastPointView | null;
 		readonly forecast: readonly ForecastPointView[];
+		/** Snowfall summed over the scoring forecast window; null when no point reports any. */
+		readonly forecastSnowMm48h: number | null;
 		readonly snow: {
 			readonly depthCm: number | null;
 			readonly recentSnowfall24hCm: number | null;
@@ -226,11 +228,7 @@ function toForecastPoint(point: WeatherPoint): ForecastPointView {
 function buildConditionsScoreView(resort: PilotProductResort, now: Date): ConditionsScoreView {
 	try {
 		const config = resolveConditionsScoreConfig(CONDITIONS_SCORE_ACTIVE_VERSION_ID);
-		const inputs = mapPilotResortToConditionsScoreInputs(
-			resort,
-			config.forecastWindowHours,
-			now
-		);
+		const inputs = mapPilotResortToConditionsScoreInputs(resort, config.forecastWindowHours, now);
 		const result = computeConditionsScore(inputs, CONDITIONS_SCORE_ACTIVE_VERSION_ID, {
 			now: () => now
 		});
@@ -342,6 +340,26 @@ export function buildResortRatingView(
 	}
 }
 
+/**
+ * Snowfall summed over the forecast window, ignoring points that report nothing. Returns null
+ * when no point in the window reports snowfall at all — unknown is not zero.
+ */
+function sumSnowfall(
+	points: readonly ForecastPointView[],
+	now: Date,
+	windowHours: number
+): number | null {
+	const cutoff = now.getTime() + windowHours * 3_600_000;
+	let total: number | null = null;
+	for (const point of points) {
+		const validAt = Date.parse(point.validAt);
+		if (!Number.isFinite(validAt) || validAt > cutoff) continue;
+		if (point.snowfallMm === null) continue;
+		total = (total ?? 0) + point.snowfallMm;
+	}
+	return total;
+}
+
 function collectSources(resort: PilotProductResort): ResortSourceView[] {
 	const sources: ResortSourceView[] = [
 		{
@@ -380,6 +398,11 @@ function collectSources(resort: PilotProductResort): ResortSourceView[] {
 export function buildResortView(resort: PilotProductResort, options: { now: Date }): ResortView {
 	const checkedAt = isoOrNull(resort.status.checkedAt);
 	const fetchedAt = isoOrNull(resort.weather.fetchedAt);
+	const forecast = resort.weather.forecast.map(toForecastPoint);
+	// The 48 h forecast-snow aggregate uses the same window the Conditions Score uses.
+	const forecastWindowHours = resolveConditionsScoreConfig(
+		CONDITIONS_SCORE_ACTIVE_VERSION_ID
+	).forecastWindowHours;
 
 	return {
 		slug: resort.slug,
@@ -415,16 +438,15 @@ export function buildResortView(resort: PilotProductResort, options: { now: Date
 			fetchedAt,
 			sourceUpdatedAt: isoOrNull(resort.weather.sourceUpdatedAt),
 			current: resort.weather.current ? toForecastPoint(resort.weather.current) : null,
-			forecast: resort.weather.forecast.map(toForecastPoint),
+			forecast,
+			forecastSnowMm48h: sumSnowfall(forecast, options.now, forecastWindowHours),
 			snow: {
 				depthCm: isFiniteNumber(resort.weather.snow.depthCm) ? resort.weather.snow.depthCm : null,
 				recentSnowfall24hCm: isFiniteNumber(resort.weather.snow.recentSnowfall24hCm)
 					? resort.weather.snow.recentSnowfall24hCm
 					: null,
 				observedAt: isoOrNull(resort.weather.snow.observedAt),
-				sourceUrl: isoOrNull(resort.weather.snow.sourceUrl)
-					? resort.weather.snow.sourceUrl
-					: null
+				sourceUrl: isoOrNull(resort.weather.snow.sourceUrl) ? resort.weather.snow.sourceUrl : null
 			}
 		},
 		terrain: {

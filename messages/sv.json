@@ -181,6 +181,8 @@
 	"unitMetresPerSecond": "m/s",
 	"unitCelsius": "°C",
 	"unitPercent": "%",
+	"labelWeight": "Viktning",
+	"labelPoints": "Poäng",
 	"pageTitle": "Nordiska skidorter",
 	"pageDescription": "Lift- och pistantal samt väderprognoser för nordiska skidorter.",
 	"apiLabel": "Produkt-API (JSON)",

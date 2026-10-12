@@ -181,6 +181,8 @@
 	"unitMetresPerSecond": "m/s",
 	"unitCelsius": "°C",
 	"unitPercent": "%",
+	"labelWeight": "Weight",
+	"labelPoints": "Points",
 	"pageTitle": "Nordic ski resorts",
 	"pageDescription": "Lift and piste counts and weather forecasts for Nordic ski resorts.",
 	"apiLabel": "Product API (JSON)",

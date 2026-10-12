@@ -70,7 +70,9 @@ export function parseResortQuery(
 
 	return {
 		q,
-		country: COUNTRY_CODES.includes(rawCountry as QueryCountry) ? (rawCountry as QueryCountry) : null,
+		country: COUNTRY_CODES.includes(rawCountry as QueryCountry)
+			? (rawCountry as QueryCountry)
+			: null,
 		minScore: clampInt(searchParams.get('minScore'), 0, 100),
 		freshSnow: clampInt(searchParams.get('freshSnow'), 0, 200),
 		openPistes: clampInt(searchParams.get('openPistes'), 0, 100),
@@ -92,7 +94,8 @@ export function isQueryActive(query: ResortQuery): boolean {
 
 function matchesSearch(resort: ResortView, needle: string): boolean {
 	if (needle === '') return true;
-	const haystack = `${resort.name} ${resort.region} ${resort.slug} ${resort.countryCode}`.toLowerCase();
+	const haystack =
+		`${resort.name} ${resort.region} ${resort.slug} ${resort.countryCode}`.toLowerCase();
 	return haystack.includes(needle.toLowerCase());
 }
 

@@ -1,440 +1,378 @@
 <script lang="ts">
-	import type { PilotProductSnapshot } from '#lib/server/resorts/product-repository.js';
 	import { m } from '#lib/paraglide/messages.js';
-	import { localizeHref, locales } from '#lib/paraglide/runtime.js';
+	import { localizeHref, type Locale } from '#lib/paraglide/runtime.js';
+	import MapView from '#lib/components/MapView.svelte';
+	import SeoHead from '#lib/components/SeoHead.svelte';
+	import type { ResortView } from '#lib/server/resorts/product-view.js';
+	import type { ResortQuery, ResortSort } from '#lib/server/resorts/product-query.js';
+	import type { Seo } from '#lib/seo.js';
+	import {
+		countryName,
+		formatCm,
+		formatCount,
+		formatDateTime,
+		formatPercent,
+		freshnessLabel,
+		freshnessTone,
+		scoreTone,
+		sizeLabel,
+		toneClass
+	} from '#lib/i18n/format.js';
 
-	type PageData = {
-		locale: (typeof locales)[number];
-		canonical: string;
-		alternates: { locale: string; href: string }[];
-		product: PilotProductSnapshot;
+	interface HomeData {
+		locale: string;
 		unavailable: boolean;
-	};
-	let { data }: { data: PageData } = $props();
-
-	const localeTags: Record<(typeof locales)[number], string> = {
-		en: 'en-GB',
-		fi: 'fi-FI',
-		sv: 'sv-SE',
-		no: 'nb-NO'
-	};
-	const timeZones: Record<string, string> = {
-		FI: 'Europe/Helsinki',
-		SE: 'Europe/Stockholm',
-		NO: 'Europe/Oslo'
-	};
-	function intlLocale(): string {
-		return localeTags[data.locale] ?? 'en-GB';
+		lastUpdated: string | null;
+		resorts: ResortView[];
+		query: ResortQuery & { active: boolean };
+		bestSlug: string | null;
+		freshestSlug: string | null;
+		seo: Seo;
 	}
 
-	function count(value: number | null): string {
-		return value === null ? '—' : new Intl.NumberFormat(intlLocale()).format(value);
+	let { data }: { data: HomeData } = $props();
+
+	const MIN_SCORE_OPTIONS = [40, 60, 75] as const;
+	const FRESH_SNOW_OPTIONS = [5, 10, 20] as const;
+	const OPEN_PISTE_OPTIONS = [25, 50, 75] as const;
+	const SORT_OPTIONS: { value: ResortSort; label: () => string }[] = [
+		{ value: 'score', label: () => m.homeSortScore() },
+		{ value: 'freshSnow', label: () => m.homeSortFreshSnow() },
+		{ value: 'snowDepth', label: () => m.homeSortSnowDepth() },
+		{ value: 'name', label: () => m.homeSortName() }
+	];
+
+	const homePath = $derived(localizeHref('/', { locale: data.locale as Locale }));
+	const best = $derived(data.resorts.find((resort) => resort.slug === data.bestSlug) ?? null);
+	const freshest = $derived(
+		data.resorts.find((resort) => resort.slug === data.freshestSlug) ?? null
+	);
+
+	function resortHref(slug: string): string {
+		return localizeHref(`/resort/${slug}`, { locale: data.locale as Locale });
 	}
 
-	function formatTime(value: string | null, countryCode: string): string {
-		if (!value) return m.notAvailable();
-		const date = new Date(value);
-		if (!Number.isFinite(date.getTime())) return m.notAvailable();
-		return new Intl.DateTimeFormat(intlLocale(), {
-			dateStyle: 'medium',
-			timeStyle: 'short',
-			timeZone: timeZones[countryCode] ?? 'UTC'
-		}).format(date);
+	/** Rebuilds the current filter state with a different comparison selection. */
+	function hrefWithCompare(compare: readonly string[]): string {
+		const parts: string[] = [];
+		const add = (key: string, value: string) => parts.push(`${key}=${encodeURIComponent(value)}`);
+
+		if (data.query.q) add('q', data.query.q);
+		if (data.query.country) add('country', data.query.country);
+		if (data.query.minScore !== null) add('minScore', String(data.query.minScore));
+		if (data.query.freshSnow !== null) add('freshSnow', String(data.query.freshSnow));
+		if (data.query.openPistes !== null) add('openPistes', String(data.query.openPistes));
+		if (data.query.sort !== 'score') add('sort', data.query.sort);
+		if (compare.length > 0) add('compare', compare.join(','));
+
+		return parts.length > 0 ? `${homePath}?${parts.join('&')}` : homePath;
 	}
 
-	function countryName(countryCode: string): string {
-		return new Intl.DisplayNames([intlLocale()], { type: 'region' }).of(countryCode) ?? countryCode;
+	function toggleCompare(slug: string): string {
+		const current = [...data.query.compare];
+		const next = current.includes(slug)
+			? current.filter((entry) => entry !== slug)
+			: current.length >= 4
+				? current
+				: [...current, slug];
+		return hrefWithCompare(next);
 	}
 
-	function sizeLabel(value: string): string {
-		if (value === 'small') return m.sizeSmall();
-		if (value === 'medium') return m.sizeMedium();
-		if (value === 'large') return m.sizeLarge();
-		return value;
-	}
-
-	function freshnessLabel(value: string): string {
-		if (value === 'fresh') return m.freshnessFresh();
-		if (value === 'partial') return m.freshnessPartial();
-		if (value === 'stale') return m.freshnessStale();
-		if (value === 'scheduled') return m.freshnessScheduled();
-		return m.freshnessUnavailable();
+	function scorePercent(resort: ResortView): number {
+		return resort.score.published && resort.score.score !== null
+			? Math.round(resort.score.score)
+			: 0;
 	}
 </script>
 
-<svelte:head>
-	<title>{m.pageTitle()}</title>
-	<meta name="description" content={m.pageDescription()} />
-	<meta name="robots" content="noindex,follow" />
-	<link rel="canonical" href={data.canonical} />
-	{#each data.alternates as alternate (alternate.locale)}
-		<link rel="alternate" hreflang={alternate.locale} href={alternate.href} />
-	{/each}
-</svelte:head>
+<SeoHead seo={data.seo} locale={data.locale} />
 
-<main>
-	<header class="page-header">
-		<p class="eyebrow">NORDIC SKI INTELLIGENCE</p>
-		<h1>{m.heading()}</h1>
-		<p class="intro">{m.intro()}</p>
-		<nav class="locale-switcher" aria-label={m.languageSelect()}>
-			{#each locales as locale (locale)}
-				<a
-					href={localizeHref('/', { locale })}
-					aria-current={data.locale === locale ? 'page' : undefined}
-					data-sveltekit-reload>{locale.toUpperCase()}</a
+<section class="stack" style="--gap: 0.6rem; margin-bottom: 1.5rem">
+	<p class="eyebrow">{m.siteName()}</p>
+	<h1>{m.heading()}</h1>
+	<p class="lede">{m.intro()}</p>
+	<p class="muted">
+		{m.homeLatestUpdate({ timestamp: formatDateTime(data.lastUpdated, data.locale, 'FI') })}
+	</p>
+</section>
+
+<form class="card filter-bar" method="get" action={homePath} role="search">
+	<label class="field">
+		<span>{m.homeSearchLabel()}</span>
+		<input
+			type="search"
+			name="q"
+			value={data.query.q}
+			placeholder={m.homeSearchPlaceholder()}
+			autocomplete="off"
+		/>
+	</label>
+
+	<label class="field">
+		<span>{m.homeCountryLabel()}</span>
+		<select name="country">
+			<option value="" selected={data.query.country === null}>{m.homeCountryAll()}</option>
+			{#each ['FI', 'SE', 'NO'] as code (code)}
+				<option value={code} selected={data.query.country === code}
+					>{countryName(code, data.locale)}</option
 				>
 			{/each}
-		</nav>
-		<a class="api-link" href="/api/pilot">{m.apiLabel()}</a>
-	</header>
+		</select>
+	</label>
 
-	{#if data.unavailable}
-		<section class="notice" role="status">
-			<h2>{m.unavailableTitle()}</h2>
-			<p>{m.unavailableBody()}</p>
-		</section>
-	{:else if data.product.resorts.length === 0}
-		<section class="notice" role="status">
-			<h2>{m.noResortsTitle()}</h2>
-			<p>{m.noResortsBody()}</p>
-		</section>
-	{:else}
-		<p class="resort-count">
-			{m.resortCount({ count: count(data.product.resorts.length) })}
-		</p>
-		<section class="resort-grid" aria-label={m.resortsList()}>
-			{#each data.product.resorts as resort (resort.slug)}
-				<article class="resort-card">
-					<header class="card-header">
-						<div>
-							<p class="region">{countryName(resort.countryCode)} · {resort.region}</p>
-							<h2>{resort.name}</h2>
-						</div>
-						<span class="size-tag">{sizeLabel(resort.size)}</span>
-					</header>
+	<label class="field">
+		<span>{m.homeMinScoreLabel()}</span>
+		<select name="minScore">
+			<option value="" selected={data.query.minScore === null}>{m.homeAnyOption()}</option>
+			{#each MIN_SCORE_OPTIONS as option (option)}
+				<option value={String(option)} selected={data.query.minScore === option}>{option}</option>
+			{/each}
+		</select>
+	</label>
 
-					<section class="counts" aria-label={m.statusSection()}>
-						<h3>
-							{m.statusSection()}
-							<span class="freshness">{freshnessLabel(resort.status.freshness)}</span>
-						</h3>
-						<div class="count-row">
-							<span>{m.lifts()}</span>
-							<strong
-								>{count(resort.status.lifts.open)}
-								<small>/ {count(resort.status.lifts.total)}</small></strong
-							>
-						</div>
-						<div class="count-row">
-							<span>{m.pistes()}</span>
-							<strong
-								>{count(resort.status.pistes.open)}
-								<small>/ {count(resort.status.pistes.total)}</small></strong
-							>
-						</div>
+	<label class="field">
+		<span>{m.homeFreshSnowLabel()}</span>
+		<select name="freshSnow">
+			<option value="" selected={data.query.freshSnow === null}>{m.homeAnyOption()}</option>
+			{#each FRESH_SNOW_OPTIONS as option (option)}
+				<option value={String(option)} selected={data.query.freshSnow === option}
+					>{option} {m.unitCm()}</option
+				>
+			{/each}
+		</select>
+	</label>
+
+	<label class="field">
+		<span>{m.homeOpenTerrainLabel()}</span>
+		<select name="openPistes">
+			<option value="" selected={data.query.openPistes === null}>{m.homeAnyOption()}</option>
+			{#each OPEN_PISTE_OPTIONS as option (option)}
+				<option value={String(option)} selected={data.query.openPistes === option}
+					>{option} {m.unitPercent()}</option
+				>
+			{/each}
+		</select>
+	</label>
+
+	<label class="field">
+		<span>{m.homeSortLabel()}</span>
+		<select name="sort">
+			{#each SORT_OPTIONS as option (option.value)}
+				<option value={option.value} selected={data.query.sort === option.value}
+					>{option.label()}</option
+				>
+			{/each}
+		</select>
+	</label>
+
+	{#if data.query.compare.length > 0}
+		<input type="hidden" name="compare" value={data.query.compare.join(',')} />
+	{/if}
+
+	<div class="filter-actions">
+		<button class="btn btn-primary" type="submit">{m.homeApplyFilters()}</button>
+		<a class="btn btn-quiet" href={homePath}>{m.homeResetFilters()}</a>
+	</div>
+</form>
+
+<section class="split split-wide" style="margin-top: 1.25rem">
+	<div class="stack">
+		<div class="panel-head">
+			<h2>{m.homeMapTitle()}</h2>
+			<p class="muted">{m.homeMapHint()}</p>
+		</div>
+		<MapView resorts={data.resorts} locale={data.locale} bestSlug={data.bestSlug} />
+	</div>
+
+	<div class="stack">
+		{#if best}
+			<article class="card">
+				<p class="eyebrow">{m.homeBestTitle()}</p>
+				<h3 style="margin-top:.2rem">
+					<a href={resortHref(best.slug)}>{best.name}</a>
+				</h3>
+				<p class="muted">
+					{countryName(best.countryCode, data.locale)} · {best.region}
+				</p>
+				<div class="score-row" style="margin-top:.75rem">
+					<div
+						class="score-dial"
+						style="--score-pct:{scorePercent(best)}"
+						role="img"
+						aria-label={`${m.cardScoreLabel()}: ${scorePercent(best)}`}
+					>
+						<span class="score-dial-inner">
+							<span class="score-dial-value tabular">{scorePercent(best)}</span>
+						</span>
+					</div>
+					<div class="score-meta">
 						<p class="muted">
-							{m.inventoryTotal({
-								lifts: count(resort.inventory.lifts),
-								pistes: count(resort.inventory.pistes)
+							{m.resortScoreCoverage({
+								percent: formatCount(
+									Math.round(best.score.coverage.availableWeightShare * 100),
+									data.locale
+								)
 							})}
 						</p>
-						<p class="muted">
-							{m.checkedAt({ timestamp: formatTime(resort.status.checkedAt, resort.countryCode) })}
-						</p>
-						<p class="muted attribution">{resort.status.attribution}</p>
-						<a href={resort.status.sourceUrl} target="_blank" rel="noreferrer">{m.statusSource()}</a
-						>
-						<p class="muted">
-							{m.inventorySource()}: {resort.inventory.attribution} ·
-							<a href={resort.inventory.sourceUrl} target="_blank" rel="noreferrer"
-								>{m.openSource()}</a
-							>
-						</p>
-						<p class="muted">
-							{m.locationSource()}: {resort.location.attribution} ·
-							<a href={resort.location.sourceUrl} target="_blank" rel="noreferrer"
-								>{m.openSource()}</a
-							>
-						</p>
-					</section>
+						<p class="muted">{m.homeBestHint()}</p>
+					</div>
+				</div>
+			</article>
+		{/if}
 
-					<section class="weather" aria-label={m.weatherTitle()}>
-						<h3>
-							{m.weatherTitle()}
-							<span class="freshness">{freshnessLabel(resort.weather.freshness)}</span>
-						</h3>
-						{#if resort.weather.current}
-							<div class="temperature">
-								{resort.weather.current.airTemperatureC === null
-									? '—'
-									: `${count(resort.weather.current.airTemperatureC)} °C`}
-								<span>{m.forecastLabel()}</span>
-							</div>
-							<p class="muted">
-								{m.forecastValidAt({
-									timestamp: formatTime(resort.weather.current.validAt, resort.countryCode)
-								})}
+		{#if freshest}
+			<article class="card">
+				<p class="eyebrow">{m.homeFreshTitle()}</p>
+				<h3 style="margin-top:.2rem">
+					<a href={resortHref(freshest.slug)}>{freshest.name}</a>
+				</h3>
+				<p class="metric-value" style="margin-top:.4rem">
+					{formatCm(freshest.weather.snow.recentSnowfall24hCm, data.locale)}
+				</p>
+				<p class="muted">{m.labelNewSnow24h()} · {m.homeFreshHint()}</p>
+			</article>
+		{/if}
+	</div>
+</section>
+
+<section class="stack" style="margin-top: 2rem">
+	<div class="between">
+		<h2>{m.homeListTitle()}</h2>
+		<div class="row">
+			<p class="muted">
+				{m.homeResultsCount({ count: formatCount(data.resorts.length, data.locale) })}
+			</p>
+			{#if data.query.active}
+				<a class="chip" href={homePath}>{m.homeResetFilters()}</a>
+			{/if}
+			{#if data.query.compare.length >= 2}
+				<a class="btn" href={localizeHref('/compare', { locale: data.locale as Locale })}>
+					{m.navCompare()} ({data.query.compare.length})
+				</a>
+			{/if}
+		</div>
+	</div>
+
+	{#if data.unavailable}
+		<section class="notice notice-warn" role="status">
+			<h3>{m.unavailableTitle()}</h3>
+			<p class="small">{m.unavailableBody()}</p>
+		</section>
+	{:else if data.resorts.length === 0}
+		<section class="notice" role="status">
+			<h3>{m.homeNoResultsTitle()}</h3>
+			<p class="small">{m.homeNoResultsBody()}</p>
+			<p><a href={homePath}>{m.homeResetFilters()}</a></p>
+		</section>
+	{:else}
+		<div class="grid-cards">
+			{#each data.resorts as resort (resort.slug)}
+				{@const inCompare = data.query.compare.includes(resort.slug)}
+				<article class="card" class:is-selected={inCompare}>
+					<div class="between">
+						<div>
+							<p class="eyebrow">
+								{countryName(resort.countryCode, data.locale)} · {resort.region}
 							</p>
-							<div class="snow-row">
-								<span>{m.wind()}</span>
-								<strong
-									>{resort.weather.current.windSpeedMs === null
-										? '—'
-										: `${count(resort.weather.current.windSpeedMs)} m/s`}</strong
-								>
+							<h3 style="margin-top:.15rem">
+								<a href={resortHref(resort.slug)}>{resort.name}</a>
+							</h3>
+						</div>
+						<span class="chip">{sizeLabel(resort.size)}</span>
+					</div>
+
+					<div class="score-row" style="margin-top:.8rem">
+						{#if resort.score.published && resort.score.score !== null}
+							<div
+								class="score-dial"
+								style="--score-pct:{scorePercent(resort)}"
+								role="img"
+								aria-label={`${m.cardScoreLabel()}: ${scorePercent(resort)}`}
+							>
+								<span class="score-dial-inner">
+									<span class="score-dial-value tabular">{scorePercent(resort)}</span>
+								</span>
+							</div>
+							<div class="score-meta">
+								<p class="chip">{m.cardScoreLabel()}</p>
+								<p class="muted">{m.resortScoreVersion({ version: resort.score.version })}</p>
+								<p class="muted">
+									{m.resortScoreCoverage({
+										percent: formatCount(
+											Math.round(resort.score.coverage.availableWeightShare * 100),
+											data.locale
+										)
+									})}
+								</p>
 							</div>
 						{:else}
-							<p class="muted">{m.forecastMissing()}</p>
+							<div class="score-dial">
+								<span class="score-dial-inner">
+									<span class="score-dial-out">{m.cardScoreNotPublished()}</span>
+								</span>
+							</div>
+							<div class="score-meta">
+								<p class="chip">{m.cardScoreLabel()}</p>
+								<p class="muted">{m.resortScoreNotPublishedBody()}</p>
+							</div>
 						{/if}
-						<div class="snow-row">
-							<span>{m.snowDepth()}</span>
-							<strong
-								>{resort.weather.snow.depthCm === null
-									? '—'
-									: `${count(resort.weather.snow.depthCm)} cm`}</strong
+					</div>
+
+					<div class="metrics" style="margin-top:.9rem">
+						<div class="metric">
+							<span class="metric-label">{m.labelOpenPistes()}</span>
+							<span class="metric-value tabular"
+								>{formatCount(resort.status.pistes.open, data.locale)}<small
+									>/ {formatCount(resort.status.pistes.total, data.locale)}</small
+								></span
 							>
 						</div>
-						<div class="snow-row">
-							<span>{m.snowfall24h()}</span>
-							<strong
-								>{resort.weather.snow.recentSnowfall24hCm === null
-									? '—'
-									: `${count(resort.weather.snow.recentSnowfall24hCm)} cm`}</strong
+						<div class="metric">
+							<span class="metric-label">{m.labelOpenLifts()}</span>
+							<span class="metric-value tabular"
+								>{formatCount(resort.status.lifts.open, data.locale)}<small
+									>/ {formatCount(resort.status.lifts.total, data.locale)}</small
+								></span
 							>
 						</div>
-						{#if resort.weather.forecast.length > 0}
-							<ul class="forecast" aria-label={m.forecastList()}>
-								{#each resort.weather.forecast.slice(0, 4) as point (point.validAt)}
-									<li>
-										<time
-											datetime={point.validAt}
-											aria-label={m.forecastTime({
-												timestamp: formatTime(point.validAt, resort.countryCode)
-											})}>{formatTime(point.validAt, resort.countryCode)}</time
-										>
-										<span
-											>{point.airTemperatureC === null
-												? '—'
-												: `${count(point.airTemperatureC)} °C`}</span
-										>
-										<span aria-label={m.precipitation()}
-											>{point.precipitationMm === null
-												? '—'
-												: `${count(point.precipitationMm)} mm`}</span
-										>
-									</li>
-								{/each}
-							</ul>
-						{/if}
-						<p class="muted">
-							{m.updatedAt({ timestamp: formatTime(resort.weather.fetchedAt, resort.countryCode) })}
-						</p>
-						<p class="muted attribution">
-							{m.weatherAttribution({ attribution: resort.weather.attribution })}
-						</p>
-						<a href={resort.weather.sourceUrl} target="_blank" rel="noreferrer"
-							>{m.weatherSource()}</a
-						>
-					</section>
+						<div class="metric">
+							<span class="metric-label">{m.labelSnowDepth()}</span>
+							<span class="metric-value tabular"
+								>{formatCm(resort.weather.snow.depthCm, data.locale)}</span
+							>
+						</div>
+						<div class="metric">
+							<span class="metric-label">{m.labelNewSnow24h()}</span>
+							<span class="metric-value tabular"
+								>{formatCm(resort.weather.snow.recentSnowfall24hCm, data.locale)}</span
+							>
+						</div>
+					</div>
+
+					<div class="between" style="margin-top:.9rem">
+						<div class="row">
+							<span class={toneClass(freshnessTone(resort.status.freshness))}>
+								{freshnessLabel(resort.status.freshness)}
+							</span>
+							<span class={toneClass(scoreTone(resort.score.score, resort.score.published))}>
+								{formatPercent(resort.terrain.pistesOpenRatio, data.locale)}
+							</span>
+						</div>
+						<div class="row">
+							<a class="btn btn-quiet" href={toggleCompare(resort.slug)}>
+								{inCompare ? m.cardCompareRemove() : m.cardCompareAdd()}
+							</a>
+							<a class="btn" href={resortHref(resort.slug)}>{m.cardViewResort()}</a>
+						</div>
+					</div>
+
+					<p class="muted" style="margin-top:.6rem">
+						{m.resortLastUpdated({
+							timestamp: formatDateTime(resort.lastUpdated, data.locale, resort.countryCode)
+						})}
+					</p>
 				</article>
 			{/each}
-		</section>
+		</div>
 	{/if}
-</main>
-
-<style>
-	:global(body) {
-		margin: 0;
-		background: #10171d;
-		color: #ecf2f5;
-		font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-	}
-
-	main {
-		max-width: 1240px;
-		margin: 0 auto;
-		padding: 3rem 1.4rem 5rem;
-	}
-
-	.page-header {
-		max-width: 760px;
-		margin: 0 0 2.5rem;
-	}
-
-	.eyebrow,
-	.region {
-		color: #83b8c8;
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-
-	h1 {
-		margin: 0.35rem 0 0.7rem;
-		font-size: clamp(2rem, 5vw, 3.5rem);
-		letter-spacing: -0.04em;
-	}
-
-	.intro,
-	.muted {
-		color: #a9bac3;
-		line-height: 1.55;
-	}
-
-	.api-link,
-	a {
-		color: #8dd1df;
-	}
-
-	.locale-switcher {
-		display: flex;
-		gap: 0.5rem;
-		margin: 1rem 0;
-	}
-
-	.locale-switcher a {
-		border: 1px solid #38505c;
-		border-radius: 0.5rem;
-		padding: 0.3rem 0.55rem;
-		text-decoration: none;
-	}
-
-	.locale-switcher a[aria-current='page'] {
-		background: #263740;
-		color: #ffffff;
-	}
-
-	.resort-count {
-		margin: 0 0 1rem;
-		color: #a9bac3;
-	}
-
-	.resort-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
-		gap: 1rem;
-	}
-
-	.resort-card,
-	.notice {
-		border: 1px solid #2a3942;
-		border-radius: 16px;
-		background: #172128;
-		padding: 1.25rem;
-	}
-
-	.card-header {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 1rem;
-		margin-bottom: 1.2rem;
-	}
-
-	.card-header h2 {
-		margin: 0.3rem 0 0;
-		font-size: 1.55rem;
-	}
-
-	.region {
-		margin: 0;
-		letter-spacing: 0.04em;
-	}
-
-	.size-tag,
-	.freshness {
-		border-radius: 999px;
-		background: #263740;
-		color: #c6d8df;
-		padding: 0.25rem 0.55rem;
-		font-size: 0.72rem;
-		white-space: nowrap;
-	}
-
-	.counts,
-	.weather {
-		border-top: 1px solid #2a3942;
-		padding-top: 1rem;
-		margin-top: 1rem;
-	}
-
-	section h3 {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		margin: 0 0 0.75rem;
-		font-size: 1rem;
-	}
-
-	.count-row,
-	.snow-row {
-		display: flex;
-		justify-content: space-between;
-		padding: 0.35rem 0;
-	}
-
-	.count-row strong {
-		font-size: 1.25rem;
-	}
-
-	.count-row small {
-		color: #9baeb8;
-		font-size: 0.9rem;
-		font-weight: 500;
-	}
-
-	.muted {
-		margin: 0.45rem 0;
-		font-size: 0.83rem;
-	}
-
-	.temperature {
-		display: flex;
-		align-items: baseline;
-		gap: 0.65rem;
-		font-size: 2rem;
-		font-weight: 700;
-	}
-
-	.temperature span {
-		color: #a9bac3;
-		font-size: 0.9rem;
-		font-weight: 400;
-	}
-
-	.forecast {
-		list-style: none;
-		margin: 0.75rem 0;
-		padding: 0;
-	}
-
-	.forecast li {
-		display: grid;
-		grid-template-columns: 1fr auto auto;
-		gap: 0.8rem;
-		border-top: 1px solid #283840;
-		padding: 0.45rem 0;
-		font-size: 0.8rem;
-	}
-
-	.forecast time {
-		color: #a9bac3;
-	}
-
-	.notice {
-		max-width: 620px;
-	}
-
-	@media (max-width: 520px) {
-		main {
-			padding: 2rem 1rem 3rem;
-		}
-
-		.resort-card {
-			padding: 1rem;
-		}
-	}
-</style>
+</section>

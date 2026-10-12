@@ -92,8 +92,7 @@ export function pilotResort(options: PilotResortOptions = {}): PilotProductResor
 			sourceUrl: 'https://en.ilmatieteenlaitos.fi/open-data-manual-fmi-wfs-services',
 			attribution: 'FMI, CC BY 4.0',
 			freshness: options.weatherFreshness ?? 'fresh',
-			fetchedAt:
-				options.fetchedAt === undefined ? '2026-10-12T13:03:20.623Z' : options.fetchedAt,
+			fetchedAt: options.fetchedAt === undefined ? '2026-10-12T13:03:20.623Z' : options.fetchedAt,
 			sourceUpdatedAt:
 				options.sourceUpdatedAt === undefined
 					? '2026-10-12T12:00:00.000Z'

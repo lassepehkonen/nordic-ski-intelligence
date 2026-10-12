@@ -181,6 +181,8 @@
 	"unitMetresPerSecond": "m/s",
 	"unitCelsius": "°C",
 	"unitPercent": "%",
+	"labelWeight": "Vekting",
+	"labelPoints": "Poeng",
 	"pageTitle": "Nordiske skianlegg",
 	"pageDescription": "Heis- og løypetall og værvarsler for nordiske skianlegg.",
 	"apiLabel": "Produkt-API (JSON)",

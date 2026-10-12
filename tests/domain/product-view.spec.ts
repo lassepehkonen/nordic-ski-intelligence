@@ -183,7 +183,10 @@ describe('product view — Resort Rating stays unpublished without approved valu
 		);
 
 		expect(rating.published).toBe(true);
-		expect(rating.rating).toBeCloseTo(80 * 0.15 + 90 * 0.25 + 70 * 0.15 + 60 * 0.2 + 75 * 0.1 + 70 * 0.075 + 65 * 0.075, 4);
+		expect(rating.rating).toBeCloseTo(
+			80 * 0.15 + 90 * 0.25 + 70 * 0.15 + 60 * 0.2 + 75 * 0.1 + 70 * 0.075 + 65 * 0.075,
+			4
+		);
 		expect(rating.missingCategoryIds).toEqual([]);
 	});
 });

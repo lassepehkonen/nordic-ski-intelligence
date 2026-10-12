@@ -181,6 +181,8 @@
 	"unitMetresPerSecond": "m/s",
 	"unitCelsius": "°C",
 	"unitPercent": "%",
+	"labelWeight": "Painotus",
+	"labelPoints": "Pisteet",
 	"pageTitle": "Hiihtokeskukset Pohjoismaissa",
 	"pageDescription": "Pohjoismaisten hiihtokeskusten hissi- ja rinnelukumäärät sekä sääennusteet.",
 	"apiLabel": "Tuoterajapinta (JSON)",

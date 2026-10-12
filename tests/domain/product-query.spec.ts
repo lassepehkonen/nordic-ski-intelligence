@@ -141,11 +141,13 @@ describe('filterAndSortResorts', () => {
 	it('filters by country and free-text search across name and region', () => {
 		const resorts = resortViews();
 
+		expect(filterAndSortResorts(resorts, query({ country: 'SE' })).map((r) => r.slug)).toEqual([
+			'are'
+		]);
 		expect(
-			filterAndSortResorts(resorts, query({ country: 'SE' })).map((r) => r.slug)
-		).toEqual(['are']);
-		expect(
-			filterAndSortResorts(resorts, query({ q: 'lapland' })).map((r) => r.slug).sort()
+			filterAndSortResorts(resorts, query({ q: 'lapland' }))
+				.map((r) => r.slug)
+				.sort()
 		).toEqual(['levi', 'yllas']);
 		expect(filterAndSortResorts(resorts, query({ q: 'LEVI' })).map((r) => r.slug)).toEqual([
 			'levi'
@@ -163,11 +165,13 @@ describe('filterAndSortResorts', () => {
 	it('treats missing fresh snow and unknown open terrain as non-matching', () => {
 		const resorts = resortViews();
 
+		expect(filterAndSortResorts(resorts, query({ freshSnow: 1 })).map((r) => r.slug)).toEqual([
+			'are'
+		]);
 		expect(
-			filterAndSortResorts(resorts, query({ freshSnow: 1 })).map((r) => r.slug)
-		).toEqual(['are']);
-		expect(
-			filterAndSortResorts(resorts, query({ openPistes: 1 })).map((r) => r.slug).sort()
+			filterAndSortResorts(resorts, query({ openPistes: 1 }))
+				.map((r) => r.slug)
+				.sort()
 		).toEqual(['levi']);
 	});
 
@@ -178,7 +182,9 @@ describe('filterAndSortResorts', () => {
 		expect(byScore[byScore.length - 1]?.slug).toBe('yllas');
 
 		const byName = filterAndSortResorts(resorts, query({ sort: 'name' }), { locale: 'fi' });
-		expect(byName.map((r) => r.name)).toEqual([...byName.map((r) => r.name)].sort((a, b) => a.localeCompare(b, 'fi')));
+		expect(byName.map((r) => r.name)).toEqual(
+			[...byName.map((r) => r.name)].sort((a, b) => a.localeCompare(b, 'fi'))
+		);
 
 		const bySnow = filterAndSortResorts(resorts, query({ sort: 'freshSnow' }));
 		expect(bySnow[0]?.slug).toBe('are');

@@ -1,7 +1,7 @@
 export default {
 	outdir: './src/lib/paraglide',
 	emitTsDeclarations: true,
-	strategy: ['url', 'baseLocale'],
+	strategy: ['url', 'preferredLanguage', 'baseLocale'],
 	urlPatterns: [
 		{
 			pattern: '/',
@@ -22,6 +22,10 @@ export default {
 			]
 		}
 	],
-	routeStrategies: [{ match: '/api/:path(.*)?', exclude: true }],
+	routeStrategies: [
+		{ match: '/api/:path(.*)?', exclude: true },
+		{ match: '/sitemap.xml', exclude: true },
+		{ match: '/robots.txt', exclude: true }
+	],
 	trailingSlash: 'never'
 };

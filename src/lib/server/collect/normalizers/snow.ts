@@ -1,54 +1,55 @@
 import type { NormalizedFactCandidate } from '../types.js';
+import type { SnowSnapshot } from '../parsers/levi/snow.js';
 
-function num(
-	category: NormalizedFactCandidate['category'],
-	key: string,
-	value: number,
-	unit: string,
-	sourceObservedAt?: string
-): NormalizedFactCandidate {
-	return { category, key, valueNumeric: value, unit, sourceObservedAt };
+export function normalizeSnow(parsed: SnowSnapshot): NormalizedFactCandidate[] {
+	const observed = parsed.lastMeasuredAt ?? parsed.sourceUpdatedAt ?? parsed.fetchedAt;
+	return [
+		{
+			category: 'snow',
+			key: 'base_depth',
+			fieldKey: 'snow_base_depth',
+			valueNumeric: parsed.baseDepthCm,
+			unit: 'cm',
+			sourceObservedAt: observed
+		},
+		{
+			category: 'snow',
+			key: 'mid_depth',
+			fieldKey: 'snow_mid_depth',
+			valueNumeric: parsed.midDepthCm,
+			unit: 'cm',
+			sourceObservedAt: observed
+		},
+		{
+			category: 'snow',
+			key: 'summit_depth',
+			fieldKey: 'snow_summit_depth',
+			valueNumeric: parsed.summitDepthCm,
+			unit: 'cm',
+			sourceObservedAt: observed
+		},
+		{
+			category: 'snow',
+			key: 'new_snow_24h',
+			fieldKey: 'snow_new_24h',
+			valueNumeric: parsed.newSnow24hCm,
+			unit: 'cm',
+			sourceObservedAt: observed
+		},
+		{
+			category: 'snow',
+			key: 'new_snow_72h',
+			fieldKey: 'snow_new_72h',
+			valueNumeric: parsed.newSnow72hCm,
+			unit: 'cm',
+			sourceObservedAt: observed
+		},
+		{
+			category: 'snow',
+			key: 'surface_condition',
+			fieldKey: 'snow_surface_condition',
+			valueText: parsed.surfaceCondition,
+			sourceObservedAt: observed
+		}
+	];
 }
-
-function txt(
-	category: NormalizedFactCandidate['category'],
-	key: string,
-	value: string,
-	sourceObservedAt?: string
-): NormalizedFactCandidate {
-	return { category, key, valueText: value, sourceObservedAt };
-}
-
-function asRecord(v: unknown): Record<string, unknown> {
-	return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
-}
-
-function observedAt(parsed: Record<string, unknown>, snow: Record<string, unknown>): string | undefined {
-	const meta = asRecord(parsed._meta);
-	const candidate = meta.source_updated_at ?? meta.fetched_at ?? snow.last_measured_at;
-	return typeof candidate === 'string' ? candidate : undefined;
-}
-
-export function normalizeSnow(parsed: unknown): NormalizedFactCandidate[] {
-	const root = asRecord(parsed);
-	const snow = asRecord(root.snow);
-	const observed = observedAt(root, snow);
-	const facts: NormalizedFactCandidate[] = [];
-
-	if (typeof snow.base_depth_cm === 'number')
-		facts.push(num('snow', 'base_depth', snow.base_depth_cm, 'cm', observed));
-	if (typeof snow.mid_depth_cm === 'number')
-		facts.push(num('snow', 'mid_depth', snow.mid_depth_cm, 'cm', observed));
-	if (typeof snow.summit_depth_cm === 'number')
-		facts.push(num('snow', 'summit_depth', snow.summit_depth_cm, 'cm', observed));
-	if (typeof snow.new_snow_24h_cm === 'number')
-		facts.push(num('snow', 'new_snow_24h', snow.new_snow_24h_cm, 'cm', observed));
-	if (typeof snow.new_snow_72h_cm === 'number')
-		facts.push(num('snow', 'new_snow_72h', snow.new_snow_72h_cm, 'cm', observed));
-	if (typeof snow.surface_condition === 'string')
-		facts.push(txt('snow', 'surface_condition', snow.surface_condition, observed));
-
-	return facts;
-}
-
-export const __normalizerInternals = { asRecord, observedAt };

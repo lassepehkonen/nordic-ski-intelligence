@@ -16,8 +16,8 @@ const fixtures = (sub: string): unknown =>
 	);
 
 describe('Levi snow parser', () => {
-	it('parses the synthetic snow fixture into a typed snapshot', () => {
-		const result = parseSnowResponse(fixtures('snow'));
+	it('parses the synthetic snow fixture from JSON text without a live request', () => {
+		const result = parseSnowResponse(JSON.stringify(fixtures('snow')));
 		expect(result.ok).toBe(true);
 		expect(result.fatal).toBe(false);
 		expect(result.data).toMatchObject({
@@ -55,6 +55,15 @@ describe('Levi lift parser', () => {
 		expect(result.data?.lifts.map((l) => l.status)).toEqual(['open', 'open', 'closed']);
 		expect(result.data?.lifts[0]?.externalId).toBe('fixture-lift-a');
 	});
+
+	it('rejects an unknown lift status instead of treating it as closed', () => {
+		const result = parseLiftResponse({
+			_meta: { fetched_at: '2026-02-20T08:30:00.000Z' },
+			lifts: [{ external_id: 'lift-a', name: 'Lift A', status: 'maintenance' }]
+		});
+		expect(result.ok).toBe(false);
+		expect(result.errors.join(' ')).toMatch(/status/i);
+	});
 });
 
 describe('Levi slope parser', () => {
@@ -65,5 +74,14 @@ describe('Levi slope parser', () => {
 		expect(result.data?.slopes).toHaveLength(3);
 		expect(result.data?.slopes.map((s) => s.difficulty)).toEqual(['green', 'blue', 'black']);
 		expect(result.data?.slopes[0]?.lengthM).toBe(800);
+	});
+
+	it('rejects an unknown slope status instead of treating it as closed', () => {
+		const result = parseSlopeResponse({
+			_meta: { fetched_at: '2026-02-20T08:30:00.000Z' },
+			slopes: [{ external_id: 'slope-a', name: 'Slope A', difficulty: 'blue', status: 'unknown' }]
+		});
+		expect(result.ok).toBe(false);
+		expect(result.errors.join(' ')).toMatch(/status/i);
 	});
 });

@@ -18,6 +18,7 @@ export type ValidationState = 'pending' | 'validated' | 'rejected' | 'needs_revi
 
 /** A pipeline-stage outcome recorded for observability. */
 export type StageName =
+	| 'approval'
 	| 'collect'
 	| 'parse'
 	| 'normalize'
@@ -28,11 +29,14 @@ export type StageName =
 
 export type StageOutcome =
 	| 'success'
+	| 'rights_blocked'
+	| 'persist_failure'
 	| 'parse_failure'
 	| 'validation_failure'
 	| 'collection_failure'
 	| 'stale_skipped'
 	| 'conflict_detected'
+	| 'conflict_check_failure'
 	| 'skipped';
 
 export interface StageEvent {
@@ -43,10 +47,10 @@ export interface StageEvent {
 }
 
 /** Source identifier (mirrors `app.sources.slug`). */
-export type SourceId = string & { readonly __sourceId: unique symbol };
+export type SourceId = string;
 
 /** Field key used inside a source reference / fact (mirrors `app.field_key`). */
-export type FieldKey = string & { readonly __fieldKey: unique symbol };
+export type FieldKey = string;
 
 export interface RetryPolicy {
 	readonly maxAttempts: number;
@@ -62,14 +66,17 @@ export interface RateLimitPolicy {
 
 export interface SourceConfig {
 	readonly sourceId: SourceId;
-	readonly sourceKind: 'synthetic' | 'resort_website' | 'national_api' | 'licensed_feed' | 'manual';
+	readonly sourceKind:
+		'synthetic' | 'resort_website' | 'national_api' | 'licensed_feed' | 'open_dataset' | 'manual';
 	readonly endpoint: string;
+	/** Non-secret protocol metadata required by a provider, such as XML Accept or an identifying User-Agent. */
+	readonly requestAccept?: string;
+	readonly requestUserAgent?: string;
 	readonly requestTimeoutMs: number;
 	readonly retry: RetryPolicy;
 	readonly rateLimit: RateLimitPolicy;
 	readonly cacheTtlMs: number;
 	readonly staleAfterMs: number;
-	readonly permitRawStorage: boolean;
 }
 
 /** Provider request envelope — the wire-level response from a Collector. */
@@ -90,6 +97,8 @@ export interface StageResult<T> {
 	readonly data?: T;
 	readonly errors: ReadonlyArray<string>;
 	readonly warnings: ReadonlyArray<string>;
+	/** Actual outbound provider requests; zero for cache hits and rate-limit rejections. */
+	readonly providerRequests?: number;
 }
 
 export interface ParseResult<T> extends StageResult<T> {
@@ -98,7 +107,10 @@ export interface ParseResult<T> extends StageResult<T> {
 
 export interface NormalizedFactCandidate {
 	readonly category: 'snow' | 'lift' | 'slope';
+	/** Canonical domain key, unique within category. */
 	readonly key: string;
+	/** Database source-reference field key; does not contain punctuation. */
+	readonly fieldKey?: string;
 	readonly valueNumeric?: number;
 	readonly valueText?: string;
 	readonly unit?: string;
@@ -151,10 +163,15 @@ export interface PipelineSummary {
 
 /** A Collector performs an HTTP fetch with bounded retries and timeout. */
 export interface Collector {
-	readonly sourceId: SourceId;
-	collect(
-		config: SourceConfig
-	): Promise<StageResult<RawResponse & { readonly attempts: number; readonly cacheHit: boolean; readonly stale: boolean }>>;
+	collect(config: SourceConfig): Promise<
+		StageResult<
+			RawResponse & {
+				readonly attempts: number;
+				readonly cacheHit: boolean;
+				readonly stale: boolean;
+			}
+		>
+	>;
 }
 
 export interface CollectOptions {
@@ -175,15 +192,19 @@ export interface Normalizer<TParsed> {
 }
 
 /** Validator applies source approval + range/type rules to candidates. */
-export interface Validator {
-	readonly name: string;
-	validate(candidates: ReadonlyArray<NormalizedFactCandidate>, source: SourceConfig): StageResult<ReadonlyArray<NormalizedFactCandidate>>;
-}
+export type Validator = (
+	candidates: ReadonlyArray<NormalizedFactCandidate>,
+	source: SourceConfig
+) => StageResult<ReadonlyArray<NormalizedFactCandidate>>;
 
 /** ConfidenceScorer assigns the qualitative confidence enum per ADR-0009. */
 export interface ConfidenceScorer {
 	readonly name: string;
-	score(candidate: NormalizedFactCandidate, source: SourceConfig): { confidence: ConfidenceLevel; reasons: ReadonlyArray<string> };
+	score(
+		candidate: NormalizedFactCandidate,
+		source: SourceConfig,
+		now?: () => Date
+	): { confidence: ConfidenceLevel; reasons: ReadonlyArray<string> };
 }
 
 /** ConflictDetector decides whether to keep the existing fact or queue for review. */
@@ -196,6 +217,9 @@ export interface ConflictDetector {
 
 /** Persister writes raw/normalized/conflict records inside one transaction. */
 export interface Persister {
+	getCurrentValues(
+		candidates: ReadonlyArray<NormalizedFactCandidate>
+	): Promise<ReadonlyMap<string, unknown>>;
 	persist(
 		facts: ReadonlyArray<ValidatedFact>,
 		conflicts: ReadonlyArray<Conflict>,

@@ -1,4 +1,5 @@
-import type { ParseResult } from '../types.js';
+import type { ParseResult } from '../../types.js';
+import { isRecord, parseJsonObject } from '../json-object.js';
 
 export interface SnowSnapshot {
 	readonly kind: 'snow_snapshot';
@@ -26,11 +27,12 @@ function asFiniteNumber(x: unknown, field: string, errors: string[]): number | u
 }
 
 export function parseSnowResponse(input: unknown): ParseResult<SnowSnapshot> {
-	if (typeof input !== 'object' || input === null) return fail(['snow payload must be an object']);
+	const decoded = parseJsonObject(input, 'snow payload');
+	if (!decoded.ok) return fail([decoded.error]);
 
-	const root = input as Record<string, unknown>;
-	const meta = (root._meta as Record<string, unknown> | undefined) ?? {};
-	const snow = (root.snow as Record<string, unknown> | undefined) ?? {};
+	const root = decoded.value;
+	const meta = isRecord(root._meta) ? root._meta : {};
+	const snow = isRecord(root.snow) ? root.snow : {};
 	const errors: string[] = [];
 
 	const baseDepthCm = asFiniteNumber(snow.base_depth_cm, 'snow.base_depth_cm', errors);

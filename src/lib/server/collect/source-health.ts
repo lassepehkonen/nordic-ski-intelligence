@@ -1,4 +1,4 @@
-import type { SourceId } from './types.js';
+import type { PipelineSummary, SourceId } from './types.js';
 
 export interface SourceHealthSnapshot {
 	readonly source_id: string;
@@ -9,6 +9,8 @@ export interface SourceHealthSnapshot {
 	readonly last_error: string | null;
 	readonly total_successes: number;
 	readonly total_failures: number;
+	readonly last_latency_ms: number | null;
+	readonly average_latency_ms: number | null;
 	readonly cooldown_until: string | null;
 }
 
@@ -19,6 +21,8 @@ interface SourceHealthState {
 	readonly lastError: string | null;
 	readonly totalSuccesses: number;
 	readonly totalFailures: number;
+	readonly lastLatencyMs: number | null;
+	readonly totalLatencyMs: number;
 	readonly cooldownUntil: string | null;
 }
 
@@ -37,6 +41,26 @@ export interface SourceHealth {
 	reset(sourceId: SourceId): void;
 }
 
+/** Update source availability only when a provider request actually happened. */
+export function recordCollectionHealth(
+	health: SourceHealth,
+	sourceId: SourceId,
+	summary: Pick<PipelineSummary, 'providerRequests' | 'collectionFailures' | 'stages'>
+): void {
+	if (summary.providerRequests === 0) return;
+	const collection = summary.stages.find((event) => event.stage === 'collect');
+	if (!collection) return;
+	if (collection.outcome === 'collection_failure') {
+		health.recordFailure(sourceId, 'collection_failure');
+		return;
+	}
+	if (collection.outcome === 'stale_skipped') {
+		if (summary.collectionFailures > 0) health.recordFailure(sourceId, 'stale_refresh_failed');
+		return;
+	}
+	if (collection.outcome === 'success') health.recordSuccess(sourceId, collection.durationMs);
+}
+
 export function createInMemorySourceHealth(options: SourceHealthOptions = {}): SourceHealth {
 	const unhealthyAfter = options.unhealthyAfter ?? 3;
 	const cooldownMs = options.cooldownMs ?? 60_000;
@@ -53,6 +77,8 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 			lastError: null,
 			totalSuccesses: 0,
 			totalFailures: 0,
+			lastLatencyMs: null,
+			totalLatencyMs: 0,
 			cooldownUntil: null
 		};
 		state.set(sourceId, fresh);
@@ -66,8 +92,9 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 	}
 
 	return {
-		recordSuccess(sourceId) {
+		recordSuccess(sourceId, durationMs) {
 			const cur = get(sourceId);
+			const latency = Number.isFinite(durationMs) ? Math.max(0, durationMs) : 0;
 			state.set(sourceId, {
 				consecutiveFailures: 0,
 				lastSuccessAt: clock().toISOString(),
@@ -75,6 +102,8 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 				lastError: null,
 				totalSuccesses: cur.totalSuccesses + 1,
 				totalFailures: cur.totalFailures,
+				lastLatencyMs: latency,
+				totalLatencyMs: cur.totalLatencyMs + latency,
 				cooldownUntil: null
 			});
 		},
@@ -82,9 +111,7 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 			const cur = get(sourceId);
 			const failures = cur.consecutiveFailures + 1;
 			const cooldownUntil =
-				failures >= unhealthyAfter
-					? new Date(clock().getTime() + cooldownMs).toISOString()
-					: null;
+				failures >= unhealthyAfter ? new Date(clock().getTime() + cooldownMs).toISOString() : null;
 			state.set(sourceId, {
 				consecutiveFailures: failures,
 				lastSuccessAt: cur.lastSuccessAt,
@@ -92,6 +119,8 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 				lastError: reason,
 				totalSuccesses: cur.totalSuccesses,
 				totalFailures: cur.totalFailures + 1,
+				lastLatencyMs: cur.lastLatencyMs,
+				totalLatencyMs: cur.totalLatencyMs,
 				cooldownUntil
 			});
 		},
@@ -114,6 +143,8 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 				last_error: cur.lastError,
 				total_successes: cur.totalSuccesses,
 				total_failures: cur.totalFailures,
+				last_latency_ms: cur.lastLatencyMs,
+				average_latency_ms: cur.totalSuccesses > 0 ? cur.totalLatencyMs / cur.totalSuccesses : null,
 				cooldown_until: cur.cooldownUntil
 			};
 		},
@@ -125,6 +156,8 @@ export function createInMemorySourceHealth(options: SourceHealthOptions = {}): S
 				lastError: null,
 				totalSuccesses: 0,
 				totalFailures: 0,
+				lastLatencyMs: null,
+				totalLatencyMs: 0,
 				cooldownUntil: null
 			});
 		}

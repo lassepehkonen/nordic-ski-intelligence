@@ -1,7 +1,7 @@
 # Phase 2 — Database foundation
 
 - **Status:** Supabase/PostgreSQL/PostGIS schema implemented in migrations and verified with local pgTAP tests.
-- **No production project was provisioned or modified.** The local schema contains no resort/source sample data.
+- **No production project was provisioned or modified.** Phase 2's local domain schema contained no resort/source sample data. The later Phase 5 pilot read model and staging snapshots are documented in [Phase 5 product slice](../phase-5-product-slice.md).
 - **Related:** [Domain model](domain-model.md), [API boundary](api.md), ADR-0002, ADR-0003, ADR-0008 and ADR-0009.
 
 ## Platform and migration workflow
@@ -14,10 +14,15 @@ Schema changes are ordered SQL migrations in `supabase/migrations/`, tracked in 
 supabase/
 ├── config.toml
 ├── migrations/
-│   ├── 20261005134852_domain_foundation.sql
-│   ├── 20261005134853_observations_and_scores.sql
-│   └── 20261005134854_ratings_commercial_and_reviews.sql
-└── tests/
+│   ├── 20261012122020_20261005134852_domain_foundation.sql
+│   ├── 20261012122137_20261005134853_observations_and_scores.sql
+│   ├── 20261012122206_20261005134854_ratings_commercial_and_reviews.sql
+│   ├── 20261012124540_20261012130000_phase5_product_slice.sql
+│   ├── 20261012124625_20261012124541_pilot_resorts_privileges.sql
+│   ├── 20261012124922_20261012124700_pilot_product_rpc.sql
+│   ├── 20261012125617_20261012125500_pilot_rpc_only.sql
+│   └── 20261012132456_20261012133000_lock_pilot_rpc_search_path.sql
+└── tests/ -- 3 pgTAP files (phase-2 foundation)
     ├── 001_schema_contract.test.sql
     ├── 002_domain_invariants.test.sql
     └── 003_rights_and_provenance.test.sql

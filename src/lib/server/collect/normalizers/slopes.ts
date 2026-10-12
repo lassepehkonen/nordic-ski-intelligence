@@ -1,42 +1,32 @@
 import type { NormalizedFactCandidate } from '../types.js';
+import type { SlopeSnapshot } from '../parsers/levi/slopes.js';
 
-function txt(
-	category: NormalizedFactCandidate['category'],
-	key: string,
-	value: string,
-	sourceObservedAt?: string
-): NormalizedFactCandidate {
-	return { category, key, valueText: value, sourceObservedAt };
-}
-
-function asRecord(v: unknown): Record<string, unknown> {
-	return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
-}
-
-export function normalizeSlopes(parsed: unknown): NormalizedFactCandidate[] {
-	const root = asRecord(parsed);
-	const meta = asRecord(root._meta);
-	const observed =
-		typeof meta.source_updated_at === 'string'
-			? meta.source_updated_at
-			: typeof meta.fetched_at === 'string'
-				? meta.fetched_at
-				: undefined;
-	const slopes = Array.isArray(root.slopes) ? root.slopes : [];
-	const facts: NormalizedFactCandidate[] = [];
-	let open = 0;
-	for (const raw of slopes) {
-		const r = asRecord(raw);
-		const status = r.status === 'open' || r.status === 'closed' ? r.status : null;
-		if (!status || typeof r.external_id !== 'string') continue;
-		if (status === 'open') open += 1;
-		facts.push(txt('slope', `piste.${r.external_id}.status`, status, observed));
-	}
+export function normalizeSlopes(parsed: SlopeSnapshot): NormalizedFactCandidate[] {
+	const observed = parsed.sourceUpdatedAt ?? parsed.fetchedAt;
+	const openCount = parsed.slopes.filter((slope) => slope.status === 'open').length;
 	return [
-		{ category: 'slope', key: 'open_count', valueNumeric: open, sourceObservedAt: observed },
-		{ category: 'slope', key: 'total_count', valueNumeric: slopes.length, sourceObservedAt: observed },
-		...facts
+		{
+			category: 'slope',
+			key: 'open_count',
+			fieldKey: 'open_piste_count',
+			valueNumeric: openCount,
+			unit: 'count',
+			sourceObservedAt: observed
+		},
+		{
+			category: 'slope',
+			key: 'total_count',
+			fieldKey: 'total_piste_count',
+			valueNumeric: parsed.slopes.length,
+			unit: 'count',
+			sourceObservedAt: observed
+		},
+		...parsed.slopes.map((slope) => ({
+			category: 'slope' as const,
+			key: `piste.${slope.externalId}.status`,
+			fieldKey: 'operating_status',
+			valueText: slope.status,
+			sourceObservedAt: observed
+		}))
 	];
 }
-
-export const __slopesInternals = { asRecord };

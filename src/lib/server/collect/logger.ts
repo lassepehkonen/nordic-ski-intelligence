@@ -1,27 +1,26 @@
 import type { Logger } from './types.js';
 
-const FORBIDDEN_KEYS = new Set([
-	'api_key',
-	'token',
-	'secret',
-	'password',
-	'authorization',
-	'cookie',
-	'set_cookie'
-]);
+const SENSITIVE_KEY = /api.?key|token|secret|password|authorization|cookie|credential/i;
 
 export interface LoggerOptions {
 	readonly sink?: (event: Record<string, unknown>) => void;
 	readonly clock?: () => Date;
 }
 
-function sanitize(event: Record<string, unknown>): Record<string, unknown> {
+function sanitizeValue(value: unknown): unknown {
+	if (Array.isArray(value)) return value.map(sanitizeValue);
+	if (typeof value !== 'object' || value === null) return value;
+
 	const clean: Record<string, unknown> = {};
-	for (const [key, value] of Object.entries(event)) {
-		if (FORBIDDEN_KEYS.has(key)) continue;
-		clean[key] = value;
+	for (const [key, child] of Object.entries(value)) {
+		if (SENSITIVE_KEY.test(key)) continue;
+		clean[key] = sanitizeValue(child);
 	}
 	return clean;
+}
+
+function sanitize(event: Record<string, unknown>): Record<string, unknown> {
+	return sanitizeValue(event) as Record<string, unknown>;
 }
 
 export function createStructuredLogger(component: string, options: LoggerOptions = {}): Logger {

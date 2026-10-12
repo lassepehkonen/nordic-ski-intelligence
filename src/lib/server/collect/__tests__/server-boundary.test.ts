@@ -4,7 +4,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repo = resolve(here, '../../../..');
+const repo = resolve(here, '../../../../..');
 
 describe('Server boundary enforcement', () => {
 	it('keeps collection modules under src/lib/server', () => {
@@ -24,8 +24,8 @@ describe('Server boundary enforcement', () => {
 		expect(existsSync(resolve(repo, 'src/lib/server/collect/trigger.ts'))).toBe(true);
 	});
 
-	it('guards the collection endpoint under /api/collect/+server.ts', () => {
-		expect(existsSync(resolve(repo, 'src/routes/api/collect/+server.ts'))).toBe(true);
+	it('does not expose a client-callable collection trigger', () => {
+		expect(existsSync(resolve(repo, 'src/routes/api/collect/+server.ts'))).toBe(false);
 	});
 
 	it('does not import collector modules from shared client code', async () => {

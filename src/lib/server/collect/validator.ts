@@ -11,6 +11,7 @@ export interface RangeRule {
 	readonly max: number;
 	readonly unit: string;
 	readonly allowText?: boolean;
+	readonly allowedValues?: ReadonlyArray<string>;
 }
 
 export interface RuleSet {
@@ -19,69 +20,72 @@ export interface RuleSet {
 }
 
 export function createRangeValidator(rules: ReadonlyArray<RangeRule>) {
-	const lookup = new Map<string, RangeRule>();
-	for (const r of rules) lookup.set(r.key, r);
+	const lookup = new Map(rules.map((rule) => [rule.key, rule]));
 
 	return function validate(
 		candidates: ReadonlyArray<NormalizedFactCandidate>,
-		_source: SourceConfig
+		source: SourceConfig
 	): StageResult<ReadonlyArray<NormalizedFactCandidate>> {
+		void source;
 		const errors: string[] = [];
 		const accepted: NormalizedFactCandidate[] = [];
-		const perKey = new Map<string, NormalizedFactCandidate>();
+		const seen = new Set<string>();
 
 		for (const candidate of candidates) {
-			const key = `${candidate.category}.${candidate.key}`;
-			if (candidate.valueText !== undefined) {
-				const rule = lookup.get(candidate.key);
-				if (rule && !rule.allowText) {
-					errors.push(`unsupported text value for ${key}`);
+			const identity = `${candidate.category}.${candidate.key}`;
+			if (seen.has(identity)) {
+				errors.push(`duplicate fact ${identity}`);
+				continue;
+			}
+			seen.add(identity);
+
+			const rule = lookup.get(candidate.key) ?? lookup.get(candidate.fieldKey ?? '');
+			if (!rule) {
+				errors.push(`unsupported metric ${identity}`);
+				continue;
+			}
+
+			const hasNumeric = candidate.valueNumeric !== undefined;
+			const hasText = candidate.valueText !== undefined;
+			if (hasNumeric === hasText) {
+				errors.push(`fact ${identity} must contain exactly one value`);
+				continue;
+			}
+
+			if (hasText) {
+				const value = candidate.valueText!.trim();
+				if (!rule.allowText || !rule.allowedValues || !rule.allowedValues.includes(value)) {
+					errors.push(`text value for ${identity} is not allowed`);
 					continue;
 				}
-				perKey.set(key, candidate);
-				accepted.push(candidate);
+				if (candidate.unit !== undefined && candidate.unit !== rule.unit) {
+					errors.push(`unit mismatch for ${identity}`);
+					continue;
+				}
+				accepted.push({ ...candidate, valueText: value });
 				continue;
 			}
-			const value = candidate.valueNumeric;
-			if (value === undefined) {
-				errors.push(`missing numeric value for ${key}`);
+
+			const value = candidate.valueNumeric!;
+			if (!Number.isFinite(value) || value < rule.min || value > rule.max) {
+				errors.push(`value for ${identity} is outside the approved range`);
 				continue;
 			}
-			const rule = lookup.get(candidate.key);
-			if (!rule) {
-				errors.push(`unsupported metric ${key}`);
+			if (candidate.unit !== rule.unit) {
+				errors.push(`unit mismatch for ${identity}`);
 				continue;
 			}
-			if (value < rule.min || value > rule.max) {
-				errors.push(`out of range ${key}=${value} (${rule.min}-${rule.max} ${rule.unit})`);
-				continue;
-			}
-			if (candidate.unit && candidate.unit !== rule.unit) {
-				errors.push(`unit mismatch for ${key}: expected ${rule.unit}, got ${candidate.unit}`);
-				continue;
-			}
-			perKey.set(key, candidate);
 			accepted.push(candidate);
-		}
-
-		if (errors.length > 0 && accepted.length === 0) {
-			return { ok: false, errors, warnings: [] };
-		}
-
-		if (errors.length > 0) {
-			return {
-				ok: accepted.length > 0,
-				data: accepted,
-				errors,
-				warnings: ['some candidates were rejected but others accepted']
-			};
 		}
 
 		return {
 			ok: accepted.length > 0,
 			data: accepted,
 			errors,
-			warnings: []
+			warnings:
+				errors.length > 0 && accepted.length > 0
+					? ['some candidates were rejected; only validated candidates may be persisted']
+					: []
 		};
 	};
 }
@@ -96,20 +100,13 @@ export function applyValidationFacts(
 	accepted: ReadonlyArray<NormalizedFactCandidate>,
 	knownRanges: ReadonlyArray<RangeRule>
 ): ReadonlyArray<FactWithValidation> {
-	const lookup = new Map(knownRanges.map((r) => [r.key, r]));
-	return accepted.map<FactWithValidation>((candidate) => {
-		const reasons: string[] = [];
-		let validation: ValidationState = 'validated';
-		const rule = lookup.get(candidate.key);
-		if (!rule) {
-			validation = 'needs_review';
-			reasons.push('no range rule defined');
-		} else if (candidate.valueNumeric !== undefined) {
-			if (candidate.valueNumeric < rule.min || candidate.valueNumeric > rule.max) {
-				validation = 'rejected';
-				reasons.push(`value outside approved range [${rule.min}, ${rule.max}]`);
-			}
-		}
-		return { candidate, validation, reasons };
+	const lookup = new Map(knownRanges.map((rule) => [rule.key, rule]));
+	return accepted.map((candidate) => {
+		const rule = lookup.get(candidate.key) ?? lookup.get(candidate.fieldKey ?? '');
+		return {
+			candidate,
+			validation: rule ? 'validated' : 'needs_review',
+			reasons: rule ? [] : ['no validation rule defined']
+		};
 	});
 }

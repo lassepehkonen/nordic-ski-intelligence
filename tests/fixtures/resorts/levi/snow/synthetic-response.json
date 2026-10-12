@@ -1,22 +1,22 @@
 {
-  "_meta": {
-    "kind": "snow_snapshot",
-    "source": "synthetic-fixture",
-    "disclaimer": "Synthetic test data only; not scraped from any real provider. Distinct synthetic timestamps used to keep fixtures deterministic.",
-    "fetched_at": "2026-02-20T09:00:00.000Z",
-    "source_updated_at": "2026-02-20T08:30:00.000Z"
-  },
-  "resort": {
-    "slug": "levi",
-    "name": "Levi"
-  },
-  "snow": {
-    "base_depth_cm": 62,
-    "mid_depth_cm": 55,
-    "summit_depth_cm": 78,
-    "new_snow_24h_cm": 3,
-    "new_snow_72h_cm": 9,
-    "surface_condition": "packed_powder",
-    "last_measured_at": "2026-02-20T08:00:00.000Z"
-  }
+	"_meta": {
+		"kind": "snow_snapshot",
+		"source": "synthetic-fixture",
+		"disclaimer": "Synthetic test data only; not scraped from any real provider. Distinct synthetic timestamps used to keep fixtures deterministic.",
+		"fetched_at": "2026-02-20T09:00:00.000Z",
+		"source_updated_at": "2026-02-20T08:30:00.000Z"
+	},
+	"resort": {
+		"slug": "levi",
+		"name": "Levi"
+	},
+	"snow": {
+		"base_depth_cm": 62,
+		"mid_depth_cm": 55,
+		"summit_depth_cm": 78,
+		"new_snow_24h_cm": 3,
+		"new_snow_72h_cm": 9,
+		"surface_condition": "packed_powder",
+		"last_measured_at": "2026-02-20T08:00:00.000Z"
+	}
 }

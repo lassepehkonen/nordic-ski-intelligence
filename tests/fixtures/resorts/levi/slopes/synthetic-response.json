@@ -1,36 +1,36 @@
 {
-  "_meta": {
-    "kind": "slope_status",
-    "source": "synthetic-fixture",
-    "disclaimer": "Synthetic test data only; not scraped from any real provider. Names are obviously fictitious.",
-    "fetched_at": "2026-02-20T09:00:00.000Z",
-    "source_updated_at": "2026-02-20T08:55:00.000Z"
-  },
-  "resort": {
-    "slug": "levi",
-    "name": "Levi"
-  },
-  "slopes": [
-    {
-      "external_id": "fixture-slope-1",
-      "name": "Fixture Slope 1",
-      "difficulty": "green",
-      "length_m": 800,
-      "status": "open"
-    },
-    {
-      "external_id": "fixture-slope-2",
-      "name": "Fixture Slope 2",
-      "difficulty": "blue",
-      "length_m": 1500,
-      "status": "open"
-    },
-    {
-      "external_id": "fixture-slope-3",
-      "name": "Fixture Slope 3",
-      "difficulty": "black",
-      "length_m": 2100,
-      "status": "closed"
-    }
-  ]
+	"_meta": {
+		"kind": "slope_status",
+		"source": "synthetic-fixture",
+		"disclaimer": "Synthetic test data only; not scraped from any real provider. Names are obviously fictitious.",
+		"fetched_at": "2026-02-20T09:00:00.000Z",
+		"source_updated_at": "2026-02-20T08:55:00.000Z"
+	},
+	"resort": {
+		"slug": "levi",
+		"name": "Levi"
+	},
+	"slopes": [
+		{
+			"external_id": "fixture-slope-1",
+			"name": "Fixture Slope 1",
+			"difficulty": "green",
+			"length_m": 800,
+			"status": "open"
+		},
+		{
+			"external_id": "fixture-slope-2",
+			"name": "Fixture Slope 2",
+			"difficulty": "blue",
+			"length_m": 1500,
+			"status": "open"
+		},
+		{
+			"external_id": "fixture-slope-3",
+			"name": "Fixture Slope 3",
+			"difficulty": "black",
+			"length_m": 2100,
+			"status": "closed"
+		}
+	]
 }

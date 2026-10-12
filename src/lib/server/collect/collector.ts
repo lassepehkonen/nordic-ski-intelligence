@@ -1,4 +1,5 @@
 import type { RawResponse, SourceConfig, SourceId, StageResult } from './types.js';
+import { MAX_PAYLOAD_BYTES } from './parsers/json-object.js';
 
 export interface CollectOptions {
 	readonly now?: () => Date;
@@ -9,38 +10,109 @@ export interface HttpCollectorDeps {
 	readonly fetchImpl?: typeof fetch;
 	readonly now?: () => Date;
 	readonly sleep?: (ms: number) => Promise<void>;
+	readonly random?: () => number;
 }
 
 interface CacheState {
 	readonly data: RawResponse;
 	readonly fetchedAtMs: number;
-	readonly etag?: string;
 }
 
 export interface CollectedResponse extends RawResponse {
+	/** Number of outbound attempts made for this collection call. */
 	readonly attempts: number;
 	readonly cacheHit: boolean;
+	/** True when the source response is past its freshness threshold or stale fallback was used. */
 	readonly stale: boolean;
 }
 
-const sleep = (ms: number): Promise<void> =>
+const defaultSleep = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
-function computeBackoff(policy: SourceConfig['retry'], attempt: number): number {
-	const exp = Math.min(policy.capMs, policy.baseMs * 2 ** (attempt - 1));
-	const jitter = exp * policy.jitterRatio;
-	return Math.max(0, exp + jitter);
+function computeBackoff(
+	policy: SourceConfig['retry'],
+	attempt: number,
+	random: () => number
+): number {
+	const exponential = Math.min(policy.capMs, policy.baseMs * 2 ** (attempt - 1));
+	const ratio = Math.max(0, Math.min(1, policy.jitterRatio));
+	const multiplier = 1 - ratio + 2 * ratio * Math.max(0, Math.min(1, random()));
+	return Math.max(0, Math.round(exponential * multiplier));
 }
 
 interface RateBucket {
 	readonly timestamps: number[];
 }
 
-export function createHttpCollector(deps: HttpCollectorDeps = {}) {
-	const fetchImpl: typeof fetch = deps.fetchImpl ?? globalThis.fetch;
-	const now: () => Date = deps.now ?? (() => new Date());
-	const sleeper: (ms: number) => Promise<void> = deps.sleep ?? sleep;
+const SAFE_RESPONSE_HEADERS = new Set([
+	'content-type',
+	'date',
+	'etag',
+	'last-modified',
+	'cache-control'
+]);
 
+function safeHeaders(headers: Headers): Record<string, string> {
+	const safe: Record<string, string> = {};
+	headers.forEach((value, key) => {
+		const normalizedKey = key.toLowerCase();
+		if (SAFE_RESPONSE_HEADERS.has(normalizedKey)) safe[normalizedKey] = value;
+	});
+	return safe;
+}
+
+function retryableStatus(status: number): boolean {
+	return status === 429 || status >= 500;
+}
+
+class PayloadTooLargeError extends Error {
+	constructor() {
+		super('payload_too_large');
+		this.name = 'PayloadTooLargeError';
+	}
+}
+
+async function readBoundedBody(
+	body: ReadableStream<Uint8Array> | null
+): Promise<{ text: string; bytes: number }> {
+	if (!body) return { text: '', bytes: 0 };
+	const reader = body.getReader();
+	const decoder = new TextDecoder();
+	const chunks: string[] = [];
+	let bytes = 0;
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			if (!value) continue;
+			bytes += value.byteLength;
+			if (bytes > MAX_PAYLOAD_BYTES) {
+				await reader.cancel().catch(() => undefined);
+				throw new PayloadTooLargeError();
+			}
+			chunks.push(decoder.decode(value, { stream: true }));
+		}
+		chunks.push(decoder.decode());
+		return { text: chunks.join(''), bytes };
+	} finally {
+		reader.releaseLock();
+	}
+}
+
+function transientError(error: unknown): string {
+	if (!(error instanceof Error)) return 'network_error';
+	if (error instanceof PayloadTooLargeError) return 'payload_too_large';
+	if (error.name === 'AbortError') return 'timeout';
+	if (/ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|fetch failed/i.test(error.message))
+		return 'network_error';
+	return 'request_error';
+}
+
+export function createHttpCollector(deps: HttpCollectorDeps = {}) {
+	const fetchImpl = deps.fetchImpl ?? globalThis.fetch;
+	const now = deps.now ?? (() => new Date());
+	const sleep = deps.sleep ?? defaultSleep;
+	const random = deps.random ?? Math.random;
 	const cache = new Map<string, CacheState>();
 	const rateLimits = new Map<SourceId, RateBucket>();
 
@@ -48,57 +120,76 @@ export function createHttpCollector(deps: HttpCollectorDeps = {}) {
 		return `${source.sourceId}::${source.endpoint}`;
 	}
 
-	function withinRateLimit(source: SourceConfig): boolean {
-		const bucket = rateLimits.get(source.sourceId) ?? { timestamps: [] };
-		const windowStart = now().getTime() - source.rateLimit.windowMs;
-		const recent = bucket.timestamps.filter((t) => t >= windowStart);
+	function reserveProviderRequest(source: SourceConfig, atMs: number): boolean {
+		const prior = rateLimits.get(source.sourceId) ?? { timestamps: [] };
+		const cutoff = atMs - source.rateLimit.windowMs;
+		const recent = prior.timestamps.filter((timestamp) => timestamp > cutoff);
 		if (recent.length >= source.rateLimit.requestsPerWindow) {
 			rateLimits.set(source.sourceId, { timestamps: recent });
 			return false;
 		}
-		recent.push(now().getTime());
+		recent.push(atMs);
 		rateLimits.set(source.sourceId, { timestamps: recent });
 		return true;
 	}
 
-	async function attemptFetch(source: SourceConfig, localNow: () => Date): Promise<RawResponse> {
+	async function attemptFetch(source: SourceConfig): Promise<RawResponse> {
 		const controller = new AbortController();
+		const start = now().getTime();
 		const timeout = setTimeout(() => controller.abort(), source.requestTimeoutMs);
-		const start = localNow().getTime();
 		try {
 			const response = await fetchImpl(source.endpoint, {
 				method: 'GET',
-				headers: { accept: 'application/json' },
-				signal: controller.signal
+				headers: {
+					accept: source.requestAccept ?? 'application/json',
+					...(source.requestUserAgent ? { 'user-agent': source.requestUserAgent } : {})
+				},
+				signal: controller.signal,
+				redirect: 'error'
 			});
-			const body = await response.text();
-			const headers: Record<string, string> = {};
-			response.headers.forEach((value, key) => {
-				headers[key] = value;
-			});
+			let body = '';
+			let bytes = 0;
+			if (response.ok) {
+				const declaredBytes = Number(response.headers.get('content-length'));
+				if (Number.isFinite(declaredBytes) && declaredBytes > MAX_PAYLOAD_BYTES) {
+					await response.body?.cancel().catch(() => undefined);
+					throw new PayloadTooLargeError();
+				}
+				const bounded = await readBoundedBody(response.body);
+				body = bounded.text;
+				bytes = bounded.bytes;
+			} else {
+				await response.body?.cancel().catch(() => undefined);
+			}
 			return {
 				body,
-				headers,
+				headers: safeHeaders(response.headers),
 				status: response.status,
-				fetchedAt: localNow().toISOString(),
-				durationMs: localNow().getTime() - start,
+				fetchedAt: now().toISOString(),
+				durationMs: Math.max(0, now().getTime() - start),
 				sourceId: source.sourceId,
 				endpoint: source.endpoint,
-				bytes: body.length
+				bytes
 			};
 		} finally {
 			clearTimeout(timeout);
 		}
 	}
 
-	function isTransient(error: unknown): boolean {
-		if (error instanceof Error) {
-			if (error.name === 'AbortError') return true;
-			if (/ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|fetch failed/i.test(error.message)) {
-				return true;
-			}
-		}
-		return false;
+	function staleFallback(
+		cached: CacheState,
+		attempts: number,
+		providerRequests: number,
+		warnings: ReadonlyArray<string>,
+		errors: ReadonlyArray<string>
+	): StageResult<CollectedResponse> {
+		return {
+			ok: true,
+			data: { ...cached.data, attempts, cacheHit: true, stale: true },
+			errors,
+			warnings: [...warnings, 'Refresh failed; serving the last cached response as stale'],
+			providerRequests
+		};
 	}
 
 	async function collect(
@@ -106,88 +197,95 @@ export function createHttpCollector(deps: HttpCollectorDeps = {}) {
 		options: CollectOptions = {}
 	): Promise<StageResult<CollectedResponse>> {
 		const localNow = options.now ?? now;
-
+		const localSleep = options.sleep ?? sleep;
 		const key = cacheKey(source);
 		const cached = cache.get(key);
+		const currentTime = localNow().getTime();
+
 		if (cached) {
-			const ageMs = localNow().getTime() - cached.fetchedAtMs;
-			const fresh = ageMs <= source.cacheTtlMs;
-			if (fresh) {
+			const ageMs = Math.max(0, currentTime - cached.fetchedAtMs);
+			if (source.cacheTtlMs > 0 && ageMs <= source.cacheTtlMs) {
 				return {
 					ok: true,
-					data: { ...cached.data, attempts: 0, cacheHit: true, stale: false },
+					data: {
+						...cached.data,
+						attempts: 0,
+						cacheHit: true,
+						stale: ageMs > source.staleAfterMs
+					},
 					errors: [],
-					warnings: []
+					warnings:
+						ageMs > source.staleAfterMs ? ['Cached response is past its freshness threshold'] : [],
+					providerRequests: 0
 				};
 			}
-			// Stale: serve from cache but also revalidate in the background
-			// only if the rate limit allows it. For determinism we return the
-			// stale cache and surface `stale: true` so the runner can record it.
-			return {
-				ok: true,
-				data: { ...cached.data, attempts: 0, cacheHit: true, stale: true },
-				errors: [],
-				warnings: []
-			};
-		}
-
-		if (!withinRateLimit(source)) {
-			return {
-				ok: false,
-				errors: [`rate limit exceeded for source ${source.sourceId}`],
-				warnings: []
-			};
 		}
 
 		const errors: string[] = [];
-		for (let attempt = 1; attempt <= source.retry.maxAttempts; attempt += 1) {
+		let providerRequests = 0;
+		let attempts = 0;
+		const maxAttempts = Math.max(1, Math.floor(source.retry.maxAttempts));
+
+		for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+			if (!reserveProviderRequest(source, localNow().getTime())) {
+				const rateLimitError = `rate limit exceeded for source ${source.sourceId}`;
+				errors.push(rateLimitError);
+				if (cached) return staleFallback(cached, attempts, providerRequests, [], errors);
+				return { ok: false, errors, warnings: [], providerRequests };
+			}
+
+			attempts += 1;
+			providerRequests += 1;
 			try {
-				const response = await attemptFetch(source, localNow);
-				if (response.status >= 500 || response.status === 429) {
+				const response = await attemptFetch(source);
+				if (retryableStatus(response.status)) {
 					errors.push(`HTTP ${response.status}`);
-					if (attempt < source.retry.maxAttempts) {
-						await sleeper(computeBackoff(source.retry, attempt));
+					if (attempt < maxAttempts) {
+						await localSleep(computeBackoff(source.retry, attempt, random));
 						continue;
 					}
-					return { ok: false, errors, warnings: [] };
+					break;
 				}
-				if (response.status >= 400) {
-					return {
-						ok: false,
-						errors: [`HTTP ${response.status} from ${source.endpoint}`],
-						warnings: []
-					};
+				if (response.status < 200 || response.status >= 300) {
+					errors.push(`HTTP ${response.status}`);
+					break;
 				}
-				const fetchedAtMs = localNow().getTime();
-				cache.set(key, {
-					data: response,
-					fetchedAtMs,
-					etag: response.headers['etag']
-				});
+
+				if (source.cacheTtlMs > 0)
+					cache.set(key, { data: response, fetchedAtMs: localNow().getTime() });
 				return {
 					ok: true,
-					data: { ...response, attempts: attempt, cacheHit: false, stale: false },
+					data: { ...response, attempts, cacheHit: false, stale: false },
 					errors: [],
-					warnings: []
+					warnings: [],
+					providerRequests
 				};
-			} catch (err) {
-				if (isTransient(err)) {
-					errors.push(err instanceof Error ? err.message : String(err));
-					if (attempt < source.retry.maxAttempts) {
-						await sleeper(computeBackoff(source.retry, attempt));
-						continue;
-					}
-				} else {
-					errors.push(err instanceof Error ? err.message : String(err));
+			} catch (error) {
+				const errorCode = transientError(error);
+				errors.push(errorCode);
+				if (errorCode === 'payload_too_large') break;
+				if (attempt < maxAttempts) {
+					await localSleep(computeBackoff(source.retry, attempt, random));
+					continue;
 				}
 				break;
 			}
 		}
 
+		if (cached) {
+			return staleFallback(
+				cached,
+				attempts,
+				providerRequests,
+				[],
+				[`refresh failed: ${errors.join('; ')}`]
+			);
+		}
 		return {
 			ok: false,
 			errors: [`exhausted retries: ${errors.join('; ')}`],
-			warnings: []
+			warnings: [],
+			providerRequests
 		};
 	}
 

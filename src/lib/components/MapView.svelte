@@ -5,9 +5,16 @@
 	import { m } from '#lib/paraglide/messages.js';
 	import { localizeHref } from '#lib/paraglide/runtime.js';
 	import type { ResortView } from '#lib/server/resorts/product-view.js';
-	import { formatCount, scoreTone } from '#lib/i18n/format.js';
+	import { formatCount, countryName, scoreTone } from '#lib/i18n/format.js';
 	import land from '#lib/assets/geo/nordic-land.json';
 	import borders from '#lib/assets/geo/nordic-borders.json';
+
+	/** Anchor points for the decorative country labels (lat, lon). */
+	const COUNTRY_LABELS: { code: string; lat: number; lon: number }[] = [
+		{ code: 'NO', lat: 61.4, lon: 8.6 },
+		{ code: 'SE', lat: 63.4, lon: 16.8 },
+		{ code: 'FI', lat: 64.2, lon: 27.2 }
+	];
 
 	let {
 		resorts,
@@ -80,7 +87,7 @@
 					interactive: false,
 					style: () => ({
 						color: colour.landLine,
-						weight: 0.6,
+						weight: 0.8,
 						fillColor: colour.land,
 						fillOpacity: 1
 					})
@@ -88,8 +95,21 @@
 
 				L.geoJSON(borders as unknown as GeoJsonObject, {
 					interactive: false,
-					style: () => ({ color: colour.border, weight: 0.9, opacity: 0.55, dashArray: '2 4' })
+					style: () => ({ color: colour.border, weight: 1, opacity: 0.7, dashArray: '2 4' })
 				}).addTo(instance);
+
+				// Country names are drawn in the active language so the map orients the visitor
+				// without a tile service and without any third-party label layer.
+				for (const label of COUNTRY_LABELS) {
+					const element = document.createElement('span');
+					element.className = 'map-country-label';
+					element.textContent = countryName(label.code, locale);
+					element.setAttribute('aria-hidden', 'true');
+					L.marker([label.lat, label.lon], {
+						interactive: false,
+						icon: L.divIcon({ className: 'map-country', html: element, iconSize: [0, 0] })
+					}).addTo(instance);
+				}
 
 				// Leaflet's own zoom buttons ship English titles; the product is multilingual.
 				const zoomLinks = instance

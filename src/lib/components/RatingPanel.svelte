@@ -1,18 +1,19 @@
 <script lang="ts">
 	import type { ResortRatingView } from '#lib/domain/types.js';
-	import { formatWholeNumber } from '#lib/i18n/format.js';
+	import { formatDecimal, formatWholeNumber } from '#lib/i18n/format.js';
 	import { currentLocale, ratingCategoryLabels } from '#lib/i18n/ui.js';
 	import { m } from '#lib/paraglide/messages.js';
 
 	let { rating }: { rating: ResortRatingView } = $props();
 
 	const locale = $derived(currentLocale());
+	const overall = $derived(rating.overall === null ? '–' : formatDecimal(rating.overall, locale));
 
 	const categories = $derived(
 		rating.categories.map((category) => ({
 			id: category.category,
 			label: ratingCategoryLabels[category.category](),
-			value: category.value,
+			value: formatDecimal(category.value, locale),
 			percent: Math.round((category.value / rating.scaleMax) * 100),
 			weight: Math.round(category.weight * 100)
 		}))
@@ -21,12 +22,10 @@
 
 <div class="stack" style="--gap: 0.85rem">
 	<p class="cluster" style="--gap: 0.75rem">
-		<span class="overall numeric">
-			{rating.overall === null ? '–' : rating.overall.toFixed(1)}
-		</span>
+		<span class="overall numeric">{overall}</span>
 		<span class="small muted">
 			{m.resort_rating_value({
-				value: rating.overall === null ? '–' : rating.overall.toFixed(1),
+				value: overall,
 				max: formatWholeNumber(rating.scaleMax, locale)
 			})}
 		</span>
@@ -38,7 +37,7 @@
 				<div class="row-line">
 					<span>{category.label}</span>
 					<span class="cluster" style="--gap: 0.4rem">
-						<span class="numeric">{category.value.toFixed(1)}</span>
+						<span class="numeric">{category.value}</span>
 						<span class="chip"
 							>{m.resort_rating_weight({
 								percent: formatWholeNumber(category.weight, locale)

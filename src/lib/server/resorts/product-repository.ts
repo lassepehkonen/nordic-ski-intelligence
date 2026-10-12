@@ -105,10 +105,15 @@ export function createPilotProductReader(options: PilotProductReaderOptions) {
 					signal: AbortSignal.timeout(8_000)
 				});
 			} catch {
+				// Timeout or connection failure: there is no HTTP status, so the reason is generic.
 				throw new Error('pilot_product_query_failed');
 			}
 
-			if (!response.ok) throw new Error('pilot_product_query_failed');
+			if (!response.ok) {
+				const failed = new Error('pilot_product_query_failed') as Error & { status?: number };
+				failed.status = response.status;
+				throw failed;
+			}
 
 			let payload: unknown;
 			try {

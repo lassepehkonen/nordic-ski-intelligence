@@ -102,10 +102,9 @@ export const GET = async ({ url, setHeaders }: RequestEvent) => {
 	for (const [name, value] of Object.entries(result.headers)) setHeaders({ [name]: value });
 
 	if (result.status !== 200) {
-		return json(
-			{ error: 'product_unavailable', resorts: [], lastUpdated: null },
-			{ status: result.status }
-		);
+		// The failure body carries a bounded reason and the upstream status, so an operator can
+		// tell a missing deployment credential from a rejected or failing read.
+		return json({ ...result.body, resorts: [], lastUpdated: null }, { status: result.status });
 	}
 
 	const product = buildProductView(result.body, { now: new Date() });

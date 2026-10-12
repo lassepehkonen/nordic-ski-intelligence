@@ -85,7 +85,8 @@ function latestObservation(
 	let latest: Observation | undefined;
 	for (const observation of observations) {
 		if (observation.metric !== metric || !isUsable(observation)) continue;
-		if (!latest || new Date(observation.observedAt) > new Date(latest.observedAt)) latest = observation;
+		if (!latest || new Date(observation.observedAt) > new Date(latest.observedAt))
+			latest = observation;
 	}
 	return latest;
 }
@@ -221,10 +222,7 @@ export function sortResorts(
 	return sorted;
 }
 
-export function bestByConditions(
-	items: readonly ResortListItem[],
-	limit = 3
-): ResortListItem[] {
+export function bestByConditions(items: readonly ResortListItem[], limit = 3): ResortListItem[] {
 	return [...items]
 		.filter((item) => item.score.score !== null)
 		.sort((a, b) => (b.score.score ?? 0) - (a.score.score ?? 0))
@@ -280,16 +278,17 @@ export function isFiltered(filters: ResortFilters): boolean {
 export const MAX_COMPARISON_RESORTS = 3;
 
 export function parseComparisonSelection(searchParams: URLSearchParams): string[] {
-	const raw = searchParams.get('resorts');
-	if (!raw) return [];
 	const seen = new Set<string>();
 	const ids: string[] = [];
-	for (const part of raw.split(',')) {
-		const id = part.trim().toLowerCase();
-		if (id === '' || seen.has(id)) continue;
-		seen.add(id);
-		ids.push(id);
-		if (ids.length >= MAX_COMPARISON_RESORTS) break;
+	// Accepts both `?resorts=a,b,c` links and a plain HTML form with repeated `resorts` fields.
+	for (const raw of searchParams.getAll('resorts')) {
+		for (const part of raw.split(',')) {
+			const id = part.trim().toLowerCase();
+			if (id === '' || seen.has(id)) continue;
+			seen.add(id);
+			ids.push(id);
+			if (ids.length >= MAX_COMPARISON_RESORTS) return ids;
+		}
 	}
 	return ids;
 }
@@ -336,7 +335,13 @@ function numberRow(
 	let bestIndex: number | null = null;
 	if (present.length > 1) {
 		const best = present.reduce((acc, entry) =>
-			higherIsBetter ? (entry.value > acc.value ? entry : acc) : entry.value < acc.value ? entry : acc
+			higherIsBetter
+				? entry.value > acc.value
+					? entry
+					: acc
+				: entry.value < acc.value
+					? entry
+					: acc
 		);
 		const allEqual = present.every((entry) => entry.value === present[0].value);
 		bestIndex = allEqual ? null : best.index;
@@ -345,9 +350,29 @@ function numberRow(
 }
 
 /** Comparison model for 2–3 resorts: conditions, rating, weather and terrain. */
-export function buildComparisonSections(items: readonly ResortListItem[]): ComparisonSection[] {
+export function buildComparisonSections(
+	items: readonly ResortListItem[],
+	countryLabel: (country: Country) => string
+): ComparisonSection[] {
 	const conditionRows: ComparisonRow[] = [
-		numberRow('score', 'compare_row_score', 'score', items.map((item) => item.score.score)),
+		{
+			id: 'country',
+			labelKey: 'compare_row_country',
+			kind: 'text',
+			values: items.map((item) => countryLabel(item.resort.country))
+		},
+		{
+			id: 'region',
+			labelKey: 'compare_row_region',
+			kind: 'text',
+			values: items.map((item) => `${item.translation.region}, ${item.translation.municipality}`)
+		},
+		numberRow(
+			'score',
+			'compare_row_score',
+			'score',
+			items.map((item) => item.score.score)
+		),
 		numberRow(
 			'snow_depth',
 			'compare_row_snow_depth',
@@ -375,7 +400,12 @@ export function buildComparisonSections(items: readonly ResortListItem[]): Compa
 	];
 
 	const ratingRows: ComparisonRow[] = [
-		numberRow('rating', 'compare_row_rating', 'score', items.map((item) => item.rating.overall))
+		numberRow(
+			'rating',
+			'compare_row_rating',
+			'score',
+			items.map((item) => item.rating.overall)
+		)
 	];
 
 	const weatherRows: ComparisonRow[] = [

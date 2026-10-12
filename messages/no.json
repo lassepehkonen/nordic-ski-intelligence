@@ -194,5 +194,9 @@
 	"footer_health_link": "Tjenestestatus",
 	"footer_languages": "Språk",
 	"footer_navigation": "Naviger",
-	"footer_sources": "Kilder og datastatus"
+	"footer_sources": "Kilder og datastatus",
+	"resort_source_reference": "Referanseartikkel",
+	"error_title": "Siden er ikke tilgjengelig",
+	"error_hint": "Adressen kan være feil, eller stedet er ikke med i forhåndsvisningen.",
+	"map_error": "Kartet kunne ikke lastes. Den samme informasjonen finnes i listen på siden."
 }

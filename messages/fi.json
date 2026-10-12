@@ -194,5 +194,9 @@
 	"footer_health_link": "Palvelun tila",
 	"footer_languages": "Kielet",
 	"footer_navigation": "Siirry",
-	"footer_sources": "Lähteet ja datan tila"
+	"footer_sources": "Lähteet ja datan tila",
+	"resort_source_reference": "Lähdeartikkeli",
+	"error_title": "Sivua ei ole saatavilla",
+	"error_hint": "Osoite voi olla väärä tai kohde ei ole mukana esiversiossa.",
+	"map_error": "Karttaa ei voitu ladata. Samat tiedot ovat tämän sivun kohdeluettelossa."
 }

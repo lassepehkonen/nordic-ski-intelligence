@@ -25,8 +25,7 @@ import { ratingValuesFor } from './ratings.js';
 import { SAMPLE_CONDITIONS_SOURCE } from './sources.js';
 
 export type RepositoryResult<T> =
-	| { ok: true; value: T }
-	| { ok: false; reason: 'not_found' | 'unavailable' };
+	{ ok: true; value: T } | { ok: false; reason: 'not_found' | 'unavailable' };
 
 function notFound<T>(): RepositoryResult<T> {
 	return { ok: false, reason: 'not_found' };

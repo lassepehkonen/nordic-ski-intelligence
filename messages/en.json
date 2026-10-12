@@ -194,5 +194,9 @@
 	"footer_health_link": "Service status",
 	"footer_languages": "Languages",
 	"footer_navigation": "Navigate",
-	"footer_sources": "Sources and data status"
+	"footer_sources": "Sources and data status",
+	"resort_source_reference": "Reference article",
+	"error_title": "This page is not available",
+	"error_hint": "The address may be wrong, or the resort is not part of this preview.",
+	"map_error": "The map could not be loaded. The resort list on this page has the same information."
 }

@@ -17,7 +17,7 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 		// The unprefixed root is a locale-detection entry point, never an indexable page:
 		// it always redirects to the resolved locale's canonical URL (`/fi`, `/en`, ...).
 		if (event.url.pathname === '/') {
-			redirect(308, localizeUrl('/', { locale }));
+			redirect(308, localizeUrl(event.url, { locale }));
 		}
 
 		return resolve(event, {

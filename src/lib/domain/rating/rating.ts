@@ -4,11 +4,7 @@
  */
 
 import type { DataState, RatingCategory, ResortRatingView } from '../types.js';
-import {
-	RESORT_RATING_V1,
-	ratingWeightTotal,
-	type ResortRatingConfig
-} from './config.js';
+import { RESORT_RATING_V1, ratingWeightTotal, type ResortRatingConfig } from './config.js';
 
 export type RatingInputs = Partial<Record<RatingCategory, number | null>>;
 
@@ -56,7 +52,12 @@ export function computeResortRating({
 		scaleMax: config.scaleMax,
 		overall,
 		coverage: totalWeight === 0 ? 0 : Math.round((availableWeight / totalWeight) * 1000) / 1000,
-		categories: categories.map(({ available: _available, ...entry }) => entry),
+		categories: categories.map((entry) => ({
+			category: entry.category,
+			value: entry.value,
+			weight: entry.weight,
+			contribution: entry.contribution
+		})),
 		dataState
 	};
 }

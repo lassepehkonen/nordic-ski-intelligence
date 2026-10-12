@@ -257,8 +257,7 @@ function buildForecast(resort: Resort, base: SampleBase, now: Date): ForecastSer
 		tempMaxC: Math.round((base.temperatureC + (TEMP_MAX_OFFSETS[index] ?? 0)) * 10) / 10,
 		snowCm: Math.round(base.forecastSnow72hCm * (SNOW_SHARES[index] ?? 0) * 10) / 10,
 		windMs: Math.round((base.windMs + (WIND_OFFSETS[index] ?? 0)) * 10) / 10,
-		precipitationMm:
-			Math.round(base.precipitationMm * (SNOW_SHARES[index] ?? 0) * 10 * 10) / 10
+		precipitationMm: Math.round(base.precipitationMm * (SNOW_SHARES[index] ?? 0) * 10 * 10) / 10
 	}));
 
 	return {
@@ -283,14 +282,7 @@ export function buildSampleConditions(resortId: string, now: Date): ResortCondit
 		sampleObservation(resortId, 'snow_depth_cm', base.snowDepthCm, 'cm', base, now),
 		sampleObservation(resortId, 'new_snow_24h_cm', base.newSnow24hCm, 'cm', base, now),
 		sampleObservation(resortId, 'new_snow_72h_cm', base.newSnow72hCm, 'cm', base, now),
-		sampleObservation(
-			resortId,
-			'forecast_snow_72h_cm',
-			base.forecastSnow72hCm,
-			'cm',
-			base,
-			now
-		),
+		sampleObservation(resortId, 'forecast_snow_72h_cm', base.forecastSnow72hCm, 'cm', base, now),
 		sampleObservation(resortId, 'snow_quality', base.snowQuality, null, base, now)
 	];
 

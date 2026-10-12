@@ -194,5 +194,9 @@
 	"footer_health_link": "Tjänstens status",
 	"footer_languages": "Språk",
 	"footer_navigation": "Navigera",
-	"footer_sources": "Källor och datastatus"
+	"footer_sources": "Källor och datastatus",
+	"resort_source_reference": "Referensartikel",
+	"error_title": "Sidan är inte tillgänglig",
+	"error_hint": "Adressen kan vara fel, eller så ingår inte orten i förhandsversionen.",
+	"map_error": "Kartan kunde inte laddas. Samma information finns i resortlistan på sidan."
 }

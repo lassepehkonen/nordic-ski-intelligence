@@ -69,11 +69,7 @@ export const RESORTS: readonly Resort[] = [
 		],
 		sources: [
 			operatorSiteSource('levi', 'https://www.levi.fi/'),
-			wikipediaSource(
-				'wikipedia-en-levi',
-				'https://en.wikipedia.org/wiki/Levi,_Finland',
-				'en'
-			),
+			wikipediaSource('wikipedia-en-levi', 'https://en.wikipedia.org/wiki/Levi,_Finland', 'en'),
 			wikipediaSource(
 				'wikipedia-fi-fi-resorts',
 				'https://fi.wikipedia.org/wiki/Talviurheilukeskus',
@@ -404,7 +400,11 @@ export const RESORTS: readonly Resort[] = [
 		],
 		sources: [
 			operatorSiteSource('are', 'https://www.skistar.com/sv/are/'),
-			wikipediaSource('wikipedia-en-are', 'https://en.wikipedia.org/wiki/%C3%85re_ski_resort', 'en'),
+			wikipediaSource(
+				'wikipedia-en-are',
+				'https://en.wikipedia.org/wiki/%C3%85re_ski_resort',
+				'en'
+			),
 			wikipediaSource(
 				'wikipedia-sv-skistar',
 				'https://sv.wikipedia.org/wiki/Skistar',
@@ -433,8 +433,7 @@ export const RESORTS: readonly Resort[] = [
 				name: 'Åre',
 				region: 'Jämtland',
 				municipality: 'Åre',
-				summary:
-					'89 pister, 42 liftar och 1030 m fallhöjd, från Åre by upp till toppen på 1420 m.'
+				summary: '89 pister, 42 liftar och 1030 m fallhöjd, från Åre by upp till toppen på 1420 m.'
 			},
 			no: {
 				locale: 'no',
@@ -722,11 +721,7 @@ export const RESORTS: readonly Resort[] = [
 		],
 		sources: [
 			operatorSiteSource('hemsedal', 'https://www.skistar.com/no/hemsedal/'),
-			wikipediaSource(
-				'wikipedia-en-hemsedal',
-				'https://en.wikipedia.org/wiki/Hemsedal',
-				'en'
-			),
+			wikipediaSource('wikipedia-en-hemsedal', 'https://en.wikipedia.org/wiki/Hemsedal', 'en'),
 			wikipediaSource(
 				'wikipedia-sv-skistar',
 				'https://sv.wikipedia.org/wiki/Skistar',
@@ -810,11 +805,7 @@ export const RESORTS: readonly Resort[] = [
 		sources: [
 			operatorSiteSource('hafjell', 'https://www.hafjell.no/'),
 			wikipediaSource('wikipedia-en-hafjell', 'https://en.wikipedia.org/wiki/Hafjell', 'en'),
-			wikipediaSource(
-				'wikipedia-no-hafjell',
-				'https://no.wikipedia.org/wiki/Hafjell',
-				'no'
-			)
+			wikipediaSource('wikipedia-no-hafjell', 'https://no.wikipedia.org/wiki/Hafjell', 'no')
 		],
 		translations: {
 			fi: {

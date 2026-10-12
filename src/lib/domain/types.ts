@@ -164,17 +164,15 @@ export interface ResortConditions {
 }
 
 export type RatingCategory =
-	| 'atmosphere'
-	| 'slopes'
-	| 'lifts'
-	| 'offpiste'
-	| 'accommodation'
-	| 'food'
-	| 'apres';
+	'atmosphere' | 'slopes' | 'lifts' | 'offpiste' | 'accommodation' | 'food' | 'apres';
 
 export type ScoreBand = 'excellent' | 'good' | 'fair' | 'poor';
 
 export interface ScoreInputView {
+	/** Configuration id of the input (e.g. `snow_depth`). */
+	id: string;
+	/** Message-catalog key for the localized input label. */
+	labelKey: string;
 	metric: MetricKey;
 	weight: number;
 	normalized: number | null;

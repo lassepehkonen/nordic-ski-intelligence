@@ -6,7 +6,14 @@
  * Missing or stale data stays explicit — it never becomes a silent zero (ADR-0009).
  */
 
-import type { Confidence, ConditionsScoreView, MetricKey, Observation, ScoreInputView, SnowQuality } from '../types.js';
+import type {
+	Confidence,
+	ConditionsScoreView,
+	MetricKey,
+	Observation,
+	ScoreInputView,
+	SnowQuality
+} from '../types.js';
 import { isUsable, lowestConfidence, worstFreshness, freshnessOf } from '../freshness.js';
 import {
 	CONDITIONS_SCORE_V1,
@@ -137,7 +144,12 @@ export function computeConditionsScore({
 			usedObservations.push(...sources);
 		}
 		inputs.push({
-			metric: definition.source.kind === 'metric' ? definition.source.metric : definition.source.numerator,
+			id: definition.id,
+			labelKey: definition.labelKey,
+			metric:
+				definition.source.kind === 'metric'
+					? definition.source.metric
+					: definition.source.numerator,
 			weight: definition.weight,
 			normalized,
 			contribution: missing ? null : normalized * definition.weight,
@@ -156,7 +168,9 @@ export function computeConditionsScore({
 			: worstFreshness(usedObservations.map((observation) => freshnessOf(observation, now)));
 
 	const confidence: Confidence =
-		usedObservations.length === 0 ? 'unknown' : lowestConfidence(usedObservations.map((o) => o.confidence));
+		usedObservations.length === 0
+			? 'unknown'
+			: lowestConfidence(usedObservations.map((o) => o.confidence));
 
 	const rawScore = inputs.reduce((total, input) => total + (input.contribution ?? 0), 0);
 	const hasScore = coverage >= config.hideBelowCoverage && availableWeight > 0;

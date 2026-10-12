@@ -10,7 +10,8 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "svelte-kit sync && npm run i18n:compile",
+		"i18n:compile": "paraglide-js compile --project ./project.inlang",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format:check": "prettier --check .",
@@ -27,9 +28,11 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
+		"@inlang/paraglide-js": "^2.27.0",
 		"@sveltejs/adapter-netlify": "^7.0.0",
 		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@types/leaflet": "^1.9.22",
 		"@types/node": "^24",
 		"eslint": "^10.4.1",
 		"eslint-config-prettier": "^10.1.8",
@@ -47,5 +50,8 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"leaflet": "^1.9.4"
 	}
 }

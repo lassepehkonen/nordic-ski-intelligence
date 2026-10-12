@@ -1,10 +1,14 @@
+<script lang="ts">
+	import { m } from '#lib/paraglide/messages.js';
+</script>
+
 <svelte:head>
-	<title>Nordic Ski Intelligent</title>
-	<meta name="description" content="Nordic Ski Intelligent -sovelluksen kehityspohja." />
+	<title>{m.site_name()}</title>
+	<meta name="description" content={m.home_intro()} />
 </svelte:head>
 
 <main>
-	<h1>Nordic Ski Intelligent</h1>
-	<p>Kehityspohja on käytössä. Tuotteen käyttöliittymä toteutetaan myöhemmässä vaiheessa.</p>
-	<p><a href="/api/health">Tarkista palvelun tila</a></p>
+	<h1>{m.home_title()}</h1>
+	<p>{m.home_intro()}</p>
+	<p><a href="/api/health">{m.footer_health_link()}</a></p>
 </main>

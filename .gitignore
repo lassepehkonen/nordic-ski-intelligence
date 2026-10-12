@@ -8,6 +8,9 @@ node_modules
 /.svelte-kit
 /build
 
+# i18n — compiled by Paraglide during `prepare`/build, never edited by hand
+/src/lib/paraglide
+
 # OS
 .DS_Store
 Thumbs.db

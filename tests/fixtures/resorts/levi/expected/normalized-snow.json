@@ -1,0 +1,51 @@
+{
+	"facts": [
+		{
+			"category": "snow",
+			"key": "base_depth",
+			"fieldKey": "snow_base_depth",
+			"valueNumeric": 62,
+			"unit": "cm",
+			"sourceObservedAt": "2026-02-20T08:00:00.000Z"
+		},
+		{
+			"category": "snow",
+			"key": "mid_depth",
+			"fieldKey": "snow_mid_depth",
+			"valueNumeric": 55,
+			"unit": "cm",
+			"sourceObservedAt": "2026-02-20T08:00:00.000Z"
+		},
+		{
+			"category": "snow",
+			"key": "summit_depth",
+			"fieldKey": "snow_summit_depth",
+			"valueNumeric": 78,
+			"unit": "cm",
+			"sourceObservedAt": "2026-02-20T08:00:00.000Z"
+		},
+		{
+			"category": "snow",
+			"key": "new_snow_24h",
+			"fieldKey": "snow_new_24h",
+			"valueNumeric": 3,
+			"unit": "cm",
+			"sourceObservedAt": "2026-02-20T08:00:00.000Z"
+		},
+		{
+			"category": "snow",
+			"key": "new_snow_72h",
+			"fieldKey": "snow_new_72h",
+			"valueNumeric": 9,
+			"unit": "cm",
+			"sourceObservedAt": "2026-02-20T08:00:00.000Z"
+		},
+		{
+			"category": "snow",
+			"key": "surface_condition",
+			"fieldKey": "snow_surface_condition",
+			"valueText": "packed_powder",
+			"sourceObservedAt": "2026-02-20T08:00:00.000Z"
+		}
+	]
+}

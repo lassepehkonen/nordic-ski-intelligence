@@ -1,0 +1,29 @@
+{
+	"createdTime": "2026-10-12T11:16:35Z",
+	"referenceTime": "2026-10-12T11:00:00Z",
+	"geometry": { "type": "Point", "coordinates": [13.037606, 63.420869] },
+	"timeSeries": [
+		{
+			"time": "2026-10-12T12:00:00Z",
+			"intervalParametersStartTime": "2026-10-12T11:00:00Z",
+			"data": {
+				"air_temperature": -1.0,
+				"wind_from_direction": 118,
+				"wind_speed": 4.5,
+				"relative_humidity": 79,
+				"precipitation_amount_mean": 0.0
+			}
+		},
+		{
+			"time": "2026-10-12T13:00:00Z",
+			"intervalParametersStartTime": "2026-10-12T12:00:00Z",
+			"data": {
+				"air_temperature": null,
+				"wind_from_direction": 120,
+				"wind_speed": 4.1,
+				"relative_humidity": 77,
+				"precipitation_amount_mean": 0.2
+			}
+		}
+	]
+}

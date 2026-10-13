@@ -246,7 +246,7 @@ export const pilotResorts: PilotResort[] = [
 		name: 'Åre',
 		countryCode: 'SE',
 		region: 'Åre, Jämtland',
-		size: 'medium',
+		size: 'large',
 		location: {
 			latitude: 63.415,
 			longitude: 13.062,

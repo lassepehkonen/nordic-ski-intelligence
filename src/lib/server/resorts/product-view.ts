@@ -415,6 +415,8 @@ function buildForecastDaily(
 		.filter(([key]) => key >= today)
 		.sort(([a], [b]) => a.localeCompare(b))
 		.slice(0, 5)
+		// A day with no points would render an all-dash row — drop it instead.
+		.filter(([, dayPoints]) => dayPoints.length > 0)
 		.map(([date, dayPoints]) => {
 			const temps = dayPoints.map((p) => p.airTemperatureC).filter((t): t is number => t !== null);
 			const winds = dayPoints.map((p) => p.windSpeedMs).filter((w): w is number => w !== null);

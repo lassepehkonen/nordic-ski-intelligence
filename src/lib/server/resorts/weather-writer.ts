@@ -24,8 +24,9 @@ function weatherCurrent(points: ReadonlyArray<WeatherPoint>, now: Date): Weather
 
 function weatherPatch(result: PilotWeatherResult, now: Date): Record<string, unknown> {
 	if (!result.ok || !result.data) return { weather_freshness: 'stale' };
-	// Four days of hourly points (96) so the product view can aggregate whole days.
-	const points = result.data.forecast.points.slice(0, 96);
+	// Today (partial) + the next four days of hourly points; a 24 h fetch offset means the
+	// span can reach ~130 points, so store everything FMI returns and cap generously.
+	const points = result.data.forecast.points.slice(0, 130);
 	return {
 		weather_fetched_at: result.data.fetchedAt,
 		weather_source_updated_at: result.data.forecast.sourceUpdatedAt,
@@ -92,7 +93,10 @@ export function createPilotWeatherWriter(options: PilotWeatherWriterOptions) {
 				providerRequests: result.providerRequests,
 				latencyMs: result.data?.latencyMs ?? null,
 				forecastPointsParsed: result.data?.forecast.points.length ?? 0,
-				forecastPointsStored: Math.min(result.data?.forecast.points.length ?? 0, 96),
+				forecastPointsStored: Math.min(
+					result.data?.forecast.points.length ?? 0,
+					130
+				),
 				errorCodes: safeErrorCodes(result.errors),
 				persistenceOk: rowWrites[index]?.status === 'fulfilled'
 			}));

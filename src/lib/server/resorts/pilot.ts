@@ -87,7 +87,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: null, total: null },
 			pistes: { open: null, total: null },
 			freshness: 'unavailable',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://ski.yllas.fi/en/slopes-and-lifts/opening-hours/'
 		}
 	},
@@ -117,7 +117,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: 3, total: 28 },
 			pistes: { open: 3, total: 44 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://www.levi.fi/en/ski/ski-resort-today/'
 		}
 	},
@@ -147,7 +147,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: 3, total: 22 },
 			pistes: { open: 3, total: 41 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://www.ruka.fi/en/skiresort/slopes'
 		}
 	},
@@ -177,7 +177,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: 0, total: 17 },
 			pistes: { open: 0, total: 26 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://himos.fi/en/skiing/slope-info/'
 		}
 	},
@@ -207,7 +207,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: 0, total: 15 },
 			pistes: { open: 0, total: 25 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://www.tahko.com/en/things-to-do/activities/skiing-and-snowboarding/'
 		}
 	},
@@ -237,7 +237,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: null, total: 9 },
 			pistes: { open: null, total: 18 },
 			freshness: 'unavailable',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://www.isosyote.fi/en/slopes-and-lifts'
 		}
 	},
@@ -254,7 +254,7 @@ export const pilotResorts: PilotResort[] = [
 			sourceLabel: 'Published resort reference point; regional forecast anchor, not a piste sensor'
 		},
 		inventory: {
-			lifts: 47,
+			lifts: 41,
 			pistes: 89,
 			sourceUrl: 'https://www.skistar.com/en/ski-destinations/are/winter-in-are/'
 		},
@@ -264,11 +264,11 @@ export const pilotResorts: PilotResort[] = [
 		},
 		status: {
 			displayApproval: 'approved',
-			lifts: { open: 0, total: 16 },
-			pistes: { open: 0, total: 39 },
+			lifts: { open: 0, total: 41 },
+			pistes: { open: 0, total: 89 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
-			sourceUrl: 'https://www.skistar.com/en/ski-destinations/are/winter-in-are/weather-and-slopes/'
+			fetchedAt: '2026-10-13T20:42:19Z',
+			sourceUrl: 'https://sv.wikipedia.org/wiki/%C3%85re_(skidomr%C3%A5de)'
 		}
 	},
 	{
@@ -297,7 +297,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: null, total: 6 },
 			pistes: { open: null, total: null },
 			freshness: 'unavailable',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://riksgransen.se/en/snow-report-mountain-status/'
 		}
 	},
@@ -327,7 +327,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: 0, total: 15 },
 			pistes: { open: 0, total: 23 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl:
 				'https://www.skistar.com/en/ski-destinations/trysil/winter-in-trysil/weather-and-slopes/'
 		}
@@ -359,7 +359,7 @@ export const pilotResorts: PilotResort[] = [
 			lifts: { open: 0, total: 22 },
 			pistes: { open: 0, total: 47 },
 			freshness: 'fresh',
-			fetchedAt: '2026-10-12T11:29:27Z',
+			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl:
 				'https://www.skistar.com/en/ski-destinations/hemsedal/winter-in-hemsedal/weather-and-slopes/'
 		}

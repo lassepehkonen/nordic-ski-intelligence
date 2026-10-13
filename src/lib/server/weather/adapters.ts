@@ -190,14 +190,30 @@ export function parseFmiForecast(xml: string): ParseResult<WeatherForecast> {
 	}
 
 	const ordered = [...points.values()].sort((a, b) => a.validAt.localeCompare(b.validAt));
+	// FMI HARMONIE publishes model output progressively (runs ~every 6 h). Far-horizon hours
+	// can arrive as EMPTY <ParameterValue/> placeholders — keeping them would render half-empty
+	// forecast days. Stop the series at the last hour where any of temp/wind/precip carries a
+	// real value; SnowDepth alone does not extend the series.
+	let lastUsableIndex = -1;
+	for (let index = 0; index < ordered.length; index += 1) {
+		const point = ordered[index];
+		const hasRealValue =
+			point.airTemperatureC !== null ||
+			point.windSpeedMs !== null ||
+			point.precipitationMm !== null;
+		if (hasRealValue) lastUsableIndex = index;
+	}
+	const usable = ordered.slice(0, lastUsableIndex + 1);
+	if (usable.length === 0) return failure('fmi_forecast_empty_series');
+
 	return {
 		ok: true,
 		data: {
 			provider: 'fmi',
 			sourceUpdatedAt,
-			latitude: ordered[0]?.latitude ?? null,
-			longitude: ordered[0]?.longitude ?? null,
-			points: ordered
+			latitude: usable[0]?.latitude ?? null,
+			longitude: usable[0]?.longitude ?? null,
+			points: usable
 		},
 		errors: [],
 		warnings: [],
@@ -464,13 +480,90 @@ export function weatherSourceFor(resort: PilotResort): SourceConfig {
 	}
 
 	const { latitude, longitude } = resort.location;
-	return {
+	return buildMetNoSource(resort, { latitude, longitude });
+}
+
+function buildMetNoSource(
+	resort: PilotResort,
+	location?: { latitude: number; longitude: number }
+): SourceConfig {
+	const { latitude, longitude } = location ?? resort.location;
+	const common = {
+		requestTimeoutMs: 12_000,
+		retry: { maxAttempts: 3, baseMs: 500, capMs: 4_000, jitterRatio: 0.2 },
+		rateLimit: { requestsPerWindow: 10, windowMs: 60_000 },
+		cacheTtlMs: 3_600_000,
+		staleAfterMs: 21_600_000
+	} as const;
+	const metNoSource: SourceConfig = {
 		...common,
 		sourceId: 'met-locationforecast-pilot',
 		sourceKind: 'national_api',
 		endpoint: `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${latitude}&lon=${longitude}`,
 		requestAccept: 'application/json',
 		requestUserAgent: MET_USER_AGENT
+	};
+	return metNoSource;
+}
+
+/** Hours beyond which a national model series is treated as too short for a 4-day forecast. */
+const MIN_FORECAST_COVERAGE_HOURS = 90;
+
+async function extendShortSeries(
+	resort: PilotResort,
+	forecast: WeatherForecast,
+	collector: ReturnType<typeof createHttpCollector>,
+	collectedWarnings: ReadonlyArray<string>
+): Promise<{ data: WeatherForecast | null; warnings: ReadonlyArray<string> }> {
+	const lastPoint = forecast.points.at(-1);
+	const nowMs = Date.now();
+	const horizonOk =
+		!!lastPoint &&
+		Number.isFinite(Date.parse(lastPoint.validAt)) &&
+		Date.parse(lastPoint.validAt) - nowMs >= MIN_FORECAST_COVERAGE_HOURS * 3_600_000;
+	if (horizonOk || resort.weather.provider !== 'fmi') {
+		return { data: null, warnings: collectedWarnings };
+	}
+
+	// FMI HARMONIE sometimes publishes only ~60 h mid-cycle. met.no locationforecast carries
+	// the full horizon for the same coordinates, so top up the missing hours from it.
+	const collected = await collector.collect(buildMetNoSource(resort));
+	if (!collected.ok || !collected.data) {
+		return {
+			data: null,
+			warnings: [...collectedWarnings, 'fmi_series_short_without_met_no_fallback']
+		};
+	}
+	const parsed = decodeBody('met-no', collected.data.body);
+	if (!parsed.ok || !parsed.data) {
+		return { data: null, warnings: [...collectedWarnings, 'fmi_series_short_met_no_unparseable'] };
+	}
+
+	const byTimestamp = new Map(forecast.points.map((p) => [p.validAt, p]));
+	for (const point of parsed.data.points) {
+		const existing = byTimestamp.get(point.validAt);
+		if (existing && existing.airTemperatureC !== null) continue;
+		byTimestamp.set(point.validAt, existing ? { ...existing, ...filled(existing, point) } : point);
+	}
+	const merged = [...byTimestamp.values()].sort((a, b) => a.validAt.localeCompare(b.validAt));
+	return {
+		data: { ...forecast, points: merged },
+		warnings: [...collectedWarnings, 'fmi_series_extended_with_met_no']
+	};
+}
+
+/** Fill null fields of `base` with real values from `donor` (donor wins only where base is null). */
+function filled(base: WeatherPoint, donor: WeatherPoint): WeatherPoint {
+	return {
+		...base,
+		airTemperatureC: base.airTemperatureC ?? donor.airTemperatureC,
+		windSpeedMs: base.windSpeedMs ?? donor.windSpeedMs,
+		windDirectionDegrees: base.windDirectionDegrees ?? donor.windDirectionDegrees,
+		relativeHumidityPercent: base.relativeHumidityPercent ?? donor.relativeHumidityPercent,
+		precipitationMm: base.precipitationMm ?? donor.precipitationMm,
+		snowfallMm: base.snowfallMm ?? donor.snowfallMm,
+		snowDepthCm: base.snowDepthCm ?? donor.snowDepthCm,
+		symbolCode: base.symbolCode ?? donor.symbolCode
 	};
 }
 
@@ -522,10 +615,16 @@ export async function collectResortForecast(
 		};
 	}
 
+	const extension = await extendShortSeries(resort, validated.data, collector, [
+		...collected.warnings,
+		...parsed.warnings,
+		...validated.warnings
+	]);
+
 	return {
 		ok: true,
 		data: {
-			forecast: validated.data,
+			forecast: extension.data ?? validated.data,
 			providerRequests: collected.providerRequests ?? 0,
 			attempts: collected.data.attempts,
 			cacheHit: collected.data.cacheHit,
@@ -536,7 +635,7 @@ export async function collectResortForecast(
 			endpoint: collected.data.endpoint
 		},
 		errors: [],
-		warnings: [...collected.warnings, ...parsed.warnings, ...validated.warnings],
+		warnings: extension.warnings,
 		providerRequests: collected.providerRequests ?? 0,
 		fatal: false
 	};

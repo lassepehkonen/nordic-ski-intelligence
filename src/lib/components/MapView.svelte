@@ -95,13 +95,16 @@
 				L.tileLayer(
 					'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
 					{
-						pane: 'hillshade',
-						minZoom: 3,
-						maxZoom: 16,
-						opacity: 0.55,
-						className: 'map-hillshade',
-						attribution: 'Hillshade &copy; <a href="https://www.esri.com/">Esri</a>'
-					}
+							pane: 'hillshade',
+							minZoom: 3,
+							maxZoom: 16,
+							// Must stay 1: partial opacity would paint the opaque JPEG normally over the
+							// map (white film). With full opacity the multiply blend keeps white neutral
+							// and only the relief shading darkens the basemap.
+							opacity: 1,
+							className: 'map-hillshade',
+							attribution: 'Hillshade &copy; <a href="https://www.esri.com/">Esri</a>'
+						}
 				).addTo(instance);
 
 				L.geoJSON(land as unknown as GeoJsonObject, {

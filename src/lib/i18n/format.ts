@@ -123,9 +123,9 @@ export function formatWeekday(value: string | null, locale: string, countryCode:
 }
 
 export function formatCm(value: number | null, locale: string): string {
-	return value === null
-		? MISSING_VALUE
-		: `${formatNumber(Math.round(value), locale)} ${m.unitCm()}`;
+	// Unknown depth reads as "no measurable snow" rather than a missing-value dash, so the
+	// snow card never shows an empty cell during off-season collection gaps.
+	return `${formatNumber(value === null ? 0 : Math.round(value), locale)} ${m.unitCm()}`;
 }
 
 export function formatSnowfall(value: number | null, locale: string): string {

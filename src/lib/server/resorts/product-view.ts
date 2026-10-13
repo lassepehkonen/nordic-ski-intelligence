@@ -93,8 +93,10 @@ export interface ForecastPointView {
 	readonly validAt: string;
 	readonly airTemperatureC: number | null;
 	readonly windSpeedMs: number | null;
+	readonly windDirectionDegrees: number | null;
 	readonly precipitationMm: number | null;
 	readonly snowfallMm: number | null;
+	readonly snowDepthCm: number | null;
 	readonly precipitationPeriodHours: number | null;
 }
 
@@ -111,6 +113,7 @@ export interface ForecastDayView {
 	readonly precipitationMm: number | null;
 	readonly snowfallMm: number | null;
 	readonly windMaxMs: number | null;
+	readonly windDirectionPoints: string | null;
 	readonly pointCount: number;
 }
 
@@ -236,8 +239,12 @@ function toForecastPoint(point: WeatherPoint): ForecastPointView {
 		validAt: point.validAt,
 		airTemperatureC: isFiniteNumber(point.airTemperatureC) ? point.airTemperatureC : null,
 		windSpeedMs: isFiniteNumber(point.windSpeedMs) ? point.windSpeedMs : null,
+		windDirectionDegrees: isFiniteNumber(point.windDirectionDegrees)
+			? point.windDirectionDegrees
+			: null,
 		precipitationMm: isFiniteNumber(point.precipitationMm) ? point.precipitationMm : null,
 		snowfallMm: isFiniteNumber(point.snowfallMm) ? point.snowfallMm : null,
+		snowDepthCm: isFiniteNumber(point.snowDepthCm) ? point.snowDepthCm : null,
 		precipitationPeriodHours: isFiniteNumber(point.precipitationPeriodHours)
 			? point.precipitationPeriodHours
 			: null
@@ -400,36 +407,87 @@ function buildForecastDaily(
 		const date = new Date(point.validAt);
 		if (!Number.isFinite(date.getTime())) continue;
 		const key = formatter.format(date);
-		if (key <= today) continue; // today's partial day is not one of the next four
+		// Today is included as a partial-day row (points from now on); the next four
+		// distinct days follow.
 		byDay.set(key, [...(byDay.get(key) ?? []), point]);
 	}
 	return [...byDay.entries()]
-		.filter(([key]) => key > today)
+		.filter(([key]) => key >= today)
 		.sort(([a], [b]) => a.localeCompare(b))
-		.slice(0, 4)
+		.slice(0, 5)
 		.map(([date, dayPoints]) => {
-			const temps = dayPoints
-				.map((p) => p.airTemperatureC)
-				.filter((t): t is number => t !== null);
-			const winds = dayPoints
-				.map((p) => p.windSpeedMs)
-				.filter((w): w is number => w !== null);
-			const precip = dayPoints
-				.map((p) => p.precipitationMm)
-				.filter((v): v is number => v !== null);
-			const snow = dayPoints
-				.map((p) => p.snowfallMm)
-				.filter((v): v is number => v !== null);
+			const temps = dayPoints.map((p) => p.airTemperatureC).filter((t): t is number => t !== null);
+			const winds = dayPoints.map((p) => p.windSpeedMs).filter((w): w is number => w !== null);
+			const precip = dayPoints.map((p) => p.precipitationMm).filter((v): v is number => v !== null);
+			const snow = dayPoints.map((p) => p.snowfallMm).filter((v): v is number => v !== null);
 			return {
 				date,
 				tempMinC: temps.length ? Math.min(...temps) : null,
 				tempMaxC: temps.length ? Math.max(...temps) : null,
-				precipitationMm: precip.length ? Number(precip.reduce((a, b) => a + b, 0).toFixed(1)) : null,
+				precipitationMm: precip.length
+					? Number(precip.reduce((a, b) => a + b, 0).toFixed(1))
+					: null,
 				snowfallMm: snow.length ? Number(snow.reduce((a, b) => a + b, 0).toFixed(1)) : null,
 				windMaxMs: winds.length ? Math.max(...winds) : null,
+				windDirectionPoints: dominantWindDirection(dayPoints),
 				pointCount: dayPoints.length
 			};
 		});
+}
+
+/** 16-point compass labels; the vector mean rounds to the nearest of the 8 shown. */
+const COMPASS_POINTS = [
+	'N',
+	'NNE',
+	'NE',
+	'ENE',
+	'E',
+	'ESE',
+	'SE',
+	'SSE',
+	'S',
+	'SSW',
+	'SW',
+	'WSW',
+	'W',
+	'WNW',
+	'NW',
+	'NNW'
+] as const;
+
+/**
+ * Prevailing wind direction for a set of points: circular mean of the hourly wind
+ * directions weighted by wind speed (a calm hour says nothing about direction).
+ * Returns one of the 8 principal compass points, or null when no usable direction.
+ */
+function dominantWindDirection(points: readonly ForecastPointView[]): string | null {
+	let x = 0;
+	let y = 0;
+	for (const point of points) {
+		if (point.windDirectionDegrees === null || point.windSpeedMs === null) continue;
+		if (point.windSpeedMs <= 0) continue;
+		const radians = (point.windDirectionDegrees * Math.PI) / 180;
+		x += point.windSpeedMs * Math.cos(radians);
+		y += point.windSpeedMs * Math.sin(radians);
+	}
+	if (x === 0 && y === 0) return null;
+	const degrees = ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+	const index = Math.round(degrees / 45) % 8;
+	return COMPASS_POINTS[index * 2];
+}
+
+/**
+ * Latest point-reported snow depth in centimetres, or null when no point reports a usable
+ * value. Used as the fallback whenever the dedicated snow source has no depth.
+ */
+function forecastSnowDepthCm(points: readonly ForecastPointView[]): number | null {
+	for (let index = points.length - 1; index >= 0; index -= 1) {
+		const point = points[index];
+		if (point && isFiniteNumber(point.snowDepthCm)) {
+			return point.snowDepthCm;
+		}
+	}
+	return null;
 }
 
 function collectSources(resort: PilotProductResort): ResortSourceView[] {
@@ -514,12 +572,21 @@ export function buildResortView(resort: PilotProductResort, options: { now: Date
 			forecastSnowMm48h: sumSnowfall(forecast, options.now, forecastWindowHours),
 			forecastDaily: buildForecastDaily(forecast, resort.countryCode),
 			snow: {
-				depthCm: isFiniteNumber(resort.weather.snow.depthCm) ? resort.weather.snow.depthCm : null,
+				// Dedicated snow source wins; otherwise fall back to the forecast model's own
+				// snow depth (HARMONIE/SMHI/met.no all carry it in the hourly points). When the
+				// fallback is used, the weather provider doubles as the data source so the snow
+				// card never renders "source: not available yet".
+				depthCm: isFiniteNumber(resort.weather.snow.depthCm)
+					? resort.weather.snow.depthCm
+					: forecastSnowDepthCm(forecast),
 				recentSnowfall24hCm: isFiniteNumber(resort.weather.snow.recentSnowfall24hCm)
 					? resort.weather.snow.recentSnowfall24hCm
 					: null,
 				observedAt: isoOrNull(resort.weather.snow.observedAt),
-				sourceUrl: isoOrNull(resort.weather.snow.sourceUrl) ? resort.weather.snow.sourceUrl : null
+				sourceUrl:
+					isFiniteNumber(resort.weather.snow.depthCm) || !resort.weather.snow.sourceUrl
+						? (isoOrNull(resort.weather.snow.sourceUrl) ?? resort.weather.sourceUrl)
+						: resort.weather.snow.sourceUrl
 			}
 		},
 		terrain: {

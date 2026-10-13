@@ -136,23 +136,34 @@ export function parseFmiForecast(xml: string): ParseResult<WeatherForecast> {
 
 		const key = validAt;
 		const current = points.get(key) ?? emptyPoint(validAt, latitude, longitude);
-		const value = finiteNumber(rawValue);
+		// HARMONIE reports NaN for "no snow at this point" — treat it as zero-measurable, not unknown.
+		const isNoValue = rawValue.trim().toLowerCase() === 'nan';
+		const value = isNoValue ? null : finiteNumber(rawValue);
 		let next: WeatherPoint;
 		switch (parameter) {
 			case 'Temperature':
+				if (value === null) continue;
 				next = { ...current, airTemperatureC: value };
 				break;
 			case 'WindSpeedMS':
+				if (value === null) continue;
 				next = { ...current, windSpeedMs: value };
 				break;
 			case 'WindDirection':
+				if (value === null) continue;
 				next = { ...current, windDirectionDegrees: value };
 				break;
 			case 'Humidity':
+				if (value === null) continue;
 				next = { ...current, relativeHumidityPercent: value };
 				break;
 			case 'Precipitation1h':
+				if (value === null) continue;
 				next = { ...current, precipitationMm: value, precipitationPeriodHours: 1 };
+				break;
+			case 'SnowDepth':
+				// FMI snow depth is in metres; the domain schema uses centimetres.
+				next = { ...current, snowDepthCm: value === null ? 0 : value * 100 };
 				break;
 			default:
 				continue;
@@ -163,6 +174,20 @@ export function parseFmiForecast(xml: string): ParseResult<WeatherForecast> {
 	if (matchedBlocks === 0 || points.size === 0) return failure('no_fmi_forecast_points');
 	if (sourceUpdatedAt !== null && !validTimestamp(sourceUpdatedAt))
 		return failure('invalid_fmi_source_timestamp');
+
+	// FMI's point query has no hourly snowfall parameter. Derive it the way national ski
+	// services do: within an hour, precipitation falls as snow when the surface temperature
+	// is at or below freezing (0.5 °C tolerance for melting flakes near 0 °C).
+	for (const point of points.values()) {
+		if (point.snowfallMm !== null) continue;
+		if (
+			point.precipitationMm !== null &&
+			point.airTemperatureC !== null &&
+			point.airTemperatureC <= 0.5
+		) {
+			points.set(point.validAt, { ...point, snowfallMm: point.precipitationMm });
+		}
+	}
 
 	const ordered = [...points.values()].sort((a, b) => a.validAt.localeCompare(b.validAt));
 	return {
@@ -392,7 +417,12 @@ function fmiEndpoint(resort: PilotResort): string {
 	url.searchParams.set('request', 'getFeature');
 	url.searchParams.set('storedquery_id', 'fmi::forecast::harmonie::surface::point::simple');
 	url.searchParams.set('latlon', `${resort.location.latitude},${resort.location.longitude}`);
-	url.searchParams.set('parameters', 'Temperature,WindSpeedMS,Precipitation1h');
+	// SnowDepth: HARMONIE serves snow depth at the point (NaN when no snow). Used for
+	// snowDepthCm; hourly snowfall is derived at parse time from precipitation + temperature.
+	url.searchParams.set(
+		'parameters',
+		'Temperature,WindSpeedMS,Precipitation1h,SnowDepth'
+	);
 	// Four days of day-by-day forecasting: HARMONIE serves up to ~108 hourly steps
 	// only when an explicit endtime is passed (default stops at 50).
 	url.searchParams.set('timestep', '60');

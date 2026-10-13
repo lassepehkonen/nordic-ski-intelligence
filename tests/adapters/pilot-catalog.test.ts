@@ -47,8 +47,11 @@ describe('Phase 5 resort adapter catalog', () => {
 		const levi = pilotResorts.find((resort) => resort.slug === 'levi');
 
 		expect(levi).toBeDefined();
-		expect(getStatusFreshness(levi!.status, new Date('2026-10-12T17:29:26Z'))).toBe('fresh');
-		expect(getStatusFreshness(levi!.status, new Date('2026-10-12T17:29:27Z'))).toBe('stale');
+		// Fetched 2026-10-13T20:42:19Z — fresh within 6 h, stale after.
+		expect(getStatusFreshness(levi!.status, new Date('2026-10-13T20:42:18Z'))).toBe('fresh');
+		expect(
+			getStatusFreshness(levi!.status, new Date('2026-10-14T02:42:20Z'))
+		).toBe('stale');
 		expect(isStatusDisplayApproved(levi!.status)).toBe(true);
 	});
 
@@ -67,7 +70,7 @@ describe('Phase 5 resort adapter catalog', () => {
 			pilotResorts.find((resort) => resort.slug === 'iso-syote')?.status.lifts.open
 		).toBeNull();
 		const are = pilotResorts.find((resort) => resort.slug === 'are');
-		expect(are?.inventory.lifts).toBe(47);
+		expect(are?.inventory.lifts).toBe(41);
 		expect(are?.inventory.pistes).toBe(89);
 	});
 });

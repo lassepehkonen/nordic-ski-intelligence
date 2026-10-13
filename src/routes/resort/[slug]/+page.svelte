@@ -301,15 +301,18 @@
 							<th scope="col" class="numeric">{m.labelPrecipitation()}</th>
 							<th scope="col" class="numeric">{m.labelSnowfall()}</th>
 							<th scope="col" class="numeric">{m.labelWind()}</th>
+							<th scope="col" class="numeric">{m.labelWindDirection()}</th>
 						</tr>
 					</thead>
 					<tbody>
-						{#each forecastRows as day (day.date)}
+						{#each forecastRows as day, dayIndex (day.date)}
 							<tr>
 								<th scope="row">
 									<time datetime={day.date}>
 										{formatWeekday(day.date + 'T12:00:00', data.locale, resort.countryCode)}
 										{formatDate(day.date + 'T12:00:00', data.locale, resort.countryCode)}
+										{#if dayIndex === 0}<span class="chip chip-today">{m.forecastToday()}</span
+											>{/if}
 									</time>
 								</th>
 								<td class="numeric">
@@ -320,6 +323,7 @@
 								<td class="numeric">{formatPrecipitation(day.precipitationMm, data.locale)}</td>
 								<td class="numeric">{formatSnowfall(day.snowfallMm, data.locale)}</td>
 								<td class="numeric">{formatWind(day.windMaxMs, data.locale)}</td>
+								<td class="numeric">{day.windDirectionPoints ?? m.notAvailable()}</td>
 							</tr>
 						{/each}
 					</tbody>

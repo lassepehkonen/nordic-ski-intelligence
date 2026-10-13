@@ -1,7 +1,8 @@
 /* Nordic Ski Intelligence — product design system (Phase 7).
-   Winter-fresh Nordic outdoor aesthetic: deep pine/evergreen surfaces, a frost-mint accent,
-   snow-green for good conditions, warm amber for warnings. Tokens only; components never
-   hard-code colours, so the light scheme below costs nothing extra. */
+   Winter powder aesthetics: icy grey-blue paper and surfaces (snow, not clinic-blue),
+   a single warm amber accent for actions and highlights, deep forest green reserved for
+   "good conditions" semantics, warm wood-brown neutrals in the dark scheme. Tokens only;
+   components never hard-code colours, so the light scheme below costs nothing extra. */
 
 :root {
 	--font-sans:
@@ -9,28 +10,28 @@
 		'Helvetica Neue', sans-serif;
 	--font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Mono', Menlo, monospace;
 
-	--paper: #f2f6f4;
+	--paper: #f3f6f7;
 	--surface: #ffffff;
-	--surface-2: #ecf2ef;
-	--surface-3: #e2ebe7;
+	--surface-2: #e9eef0;
+	--surface-3: #dfe6e9;
 	/* Map palette: land, water and lines must separate clearly at Nordic zoom levels. */
-	--map-water: #d7e6e0;
-	--map-land: #fbfdfb;
-	--map-land-line: #9fb8ae;
-	--map-border: #7d9c8e;
-	--ink: #14211c;
-	--ink-2: #3b4f46;
-	--ink-3: #64796f;
-	--line: #dce5e0;
-	--line-2: #c4d3cb;
+	--map-water: #d9e3e7;
+	--map-land: #fcfdfd;
+	--map-land-line: #a3b6bc;
+	--map-border: #8aa0a8;
+	--ink: #16211d;
+	--ink-2: #41544c;
+	--ink-3: #67797a;
+	--line: #dde4e7;
+	--line-2: #c5d0d5;
 
-	--accent: #0f6b52;
-	--accent-2: #0b5340;
-	--accent-soft: #e2f2eb;
+	--accent: #b25a15;
+	--accent-2: #8f4710;
+	--accent-soft: #f8ecdd;
 	--accent-ink: #ffffff;
-	--snow: #1e7a52;
-	--snow-soft: #dff2e7;
-	--warn: #a06018;
+	--snow: #237a4d;
+	--snow-soft: #e2f2e8;
+	--warn: #8a5412;
 	--warn-soft: #f9eedc;
 	--stop: #8f2f2b;
 	--stop-soft: #f8e8e5;
@@ -54,30 +55,31 @@
 @media (prefers-color-scheme: dark) {
 	:root {
 		color-scheme: dark;
-		/* Deep pine night — dark and calm but not black, no blue cast. */
-		--paper: #131b17;
-		--surface: #1a241f;
-		--surface-2: #202b26;
-		--surface-3: #28352e;
-		--map-water: #0c1411;
-		--map-land: #26312b;
-		--map-land-line: #3e5247;
-		--map-border: #5d7a6c;
-		--ink: #eef4f0;
-		--ink-2: #bccbc3;
-		--ink-3: #8a9c91;
-		--line: #27332d;
-		--line-2: #35433b;
-		--accent: #56c7a0;
-		--accent-2: #79d8b6;
-		--accent-soft: #17352b;
-		--accent-ink: #0c1512;
-		--snow: #6ecf9c;
-		--snow-soft: #153024;
-		--warn: #e2a95f;
-		--warn-soft: #33281a;
-		--stop: #e5908b;
-		--stop-soft: #382424;
+		/* Near-black icy night with a touch of pine; warm wood tones in the surfaces so it
+		   never reads as "tech blue". Amber carries every action. */
+		--paper: #0f1517;
+		--surface: #151d1f;
+		--surface-2: #1b2427;
+		--surface-3: #232e31;
+		--map-water: #0a1114;
+		--map-land: #212c30;
+		--map-land-line: #3c5158;
+		--map-border: #5f7a83;
+		--ink: #edf2f1;
+		--ink-2: #b7c5c6;
+		--ink-3: #84969a;
+		--line: #242f32;
+		--line-2: #324045;
+		--accent: #e5a058;
+		--accent-2: #f0b877;
+		--accent-soft: #3a2b13;
+		--accent-ink: #20150a;
+		--snow: #7bd3a2;
+		--snow-soft: #16302a;
+		--warn: #e29a5f;
+		--warn-soft: #34261a;
+		--stop: #e58f8f;
+		--stop-soft: #3a2323;
 		--shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
 		--shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 34px -24px rgba(0, 0, 0, 0.8);
 	}

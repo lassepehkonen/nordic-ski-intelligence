@@ -768,6 +768,12 @@ td.best {
 
 /* (no raster hillshade: removed — opaque tiles painted a pale film over the map) */
 
+/* Slightly darker, calmer basemap: ton down the bright Esri Topo colours
+   and nuke the harsh white; markers and attributions stay unaffected. */
+.map-frame .map-basemap {
+	filter: brightness(0.82) saturate(1.08);
+}
+
 /* Global reset svg rules (max-width) collapse the Leaflet overlay SVGs to 0 width;
    every Leaflet-created svg must size to its width/height attributes again. */
 .map-frame .leaflet-pane svg {

@@ -96,6 +96,7 @@
 					{
 						minZoom: 3,
 						maxZoom: 17,
+						className: 'map-basemap',
 						attribution:
 							'Tiles &copy; Esri — Source: Esri, USGS, NOAA, Garmin, HERE, GIS User Community'
 					}

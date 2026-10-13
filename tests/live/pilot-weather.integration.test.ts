@@ -22,14 +22,19 @@ describe.skipIf(!liveEnabled)('live pilot weather providers', () => {
 			}
 			await createPilotWeatherWriter({ supabaseUrl, serviceRoleKey }).persistRun(run);
 			const product = await createPilotProductReader({ supabaseUrl, publishableKey }).getProduct();
-			expect(product.lastCollectionRun?.completedAt).toBe(run.endedAt);
+			// timestamptz round-trips as +00:00 while run.endedAt is Z — compare instants.
+			expect(Date.parse(product.lastCollectionRun?.completedAt ?? '')).toBe(
+				Date.parse(run.endedAt)
+			);
 			expect(product.lastCollectionRun?.providerRequestsByProvider).toEqual(
 				run.providerRequestsByProvider
 			);
 			for (const result of run.results.filter((item) => item.ok && item.data)) {
 				expect(
-					product.resorts.find((resort) => resort.slug === result.slug)?.weather.fetchedAt
-				).toBe(result.data?.fetchedAt);
+					Date.parse(
+						product.resorts.find((resort) => resort.slug === result.slug)?.weather.fetchedAt ?? ''
+					)
+				).toBe(Date.parse(result.data?.fetchedAt ?? ''));
 			}
 		}
 

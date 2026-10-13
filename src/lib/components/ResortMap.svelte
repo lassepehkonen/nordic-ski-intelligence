@@ -23,11 +23,17 @@
 	let markerLayer = $state.raw<Leaflet.LayerGroup | null>(null);
 	let loadFailed = $state(false);
 
-	const LIGHT_TILES = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-	const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+	const LIGHT_TILES = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
+	const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png';
+	const LIGHT_LABELS = 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png';
+	const DARK_LABELS = 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png';
+	const HILLSHADE_TILES =
+		'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}';
 	const FALLBACK_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 	const ATTRIBUTION =
 		'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+	const HILLSHADE_ATTR =
+		'Hillshade &copy; <a href="https://www.esri.com/">Esri</a>, Vantor, Airbus DS, USGS, NGA, NASA, CGIAR, NCEAS, NLS';
 
 	let tileErrors = 0;
 
@@ -40,11 +46,19 @@
 	}
 
 	/** A calm base layer, matching the colour scheme; a saturated terrain style is avoided. */
-	function tileUrl(): string {
-		const dark =
+	function isDark(): boolean {
+		return (
 			typeof window !== 'undefined' &&
-			window.matchMedia?.('(prefers-color-scheme: dark)').matches === true;
-		return dark ? DARK_TILES : LIGHT_TILES;
+			window.matchMedia?.('(prefers-color-scheme: dark)').matches === true
+		);
+	}
+
+	function tileUrl(): string {
+		return isDark() ? DARK_TILES : LIGHT_TILES;
+	}
+
+	function labelUrl(): string {
+		return isDark() ? DARK_LABELS : LIGHT_LABELS;
 	}
 
 	// Create the map once the container is in the DOM, then expose it as reactive state so the
@@ -59,15 +73,48 @@
 				await import('leaflet/dist/leaflet.css');
 				if (disposed || !container || map) return;
 
-				const instance = L.map(container, { scrollWheelZoom: false });
-				const tiles = L.tileLayer(tileUrl(), { maxZoom: 18, attribution: ATTRIBUTION });
+				const tileOptions = {
+					maxZoom: 18,
+					attribution: ATTRIBUTION
+				} as const;
+
+				const instance = L.map(container, {
+					scrollWheelZoom: 'center',
+					wheelPxPerZoomLevel: 120,
+					inertia: true,
+					zoomSnap: 0.25,
+					zoomDelta: 0.5,
+					worldCopyJump: true,
+					maxBounds: L.latLngBounds([-85, -720], [85, 720]),
+					maxBoundsViscosity: 0.8
+				});
+				const tiles = L.tileLayer(tileUrl(), tileOptions);
 				tiles.on('tileerror', () => {
 					// One resilient retry against the OSM standard tiles if the calm base layer is
 					// unreachable (blocked network, regional restrictions).
 					tileErrors += 1;
 					if (tileErrors === 3) tiles.setUrl(FALLBACK_TILES);
 				});
+				// Terrain relief behind the calm base: noticeable when zooming towards a resort,
+				// blended so it does not wash out the flat basemap colours.
+				const dark = isDark();
+				const hillshade = L.tileLayer(HILLSHADE_TILES, {
+					maxZoom: 16,
+					minZoom: 3,
+					attribution: HILLSHADE_ATTR,
+					className: 'hillshade-layer',
+					opacity: dark ? 0.35 : 0.45
+				});
+				const labels = L.tileLayer(labelUrl(), {
+					maxZoom: 18,
+					attribution: '',
+					className: 'labels-layer',
+					opacity: 0.9,
+					pane: 'shadowPane'
+				});
 				tiles.addTo(instance);
+				hillshade.addTo(instance);
+				labels.addTo(instance);
 				instance.invalidateSize();
 
 				markerLayer = L.layerGroup().addTo(instance);
@@ -148,5 +195,14 @@
 
 	.map-shell :global(.leaflet-control-attribution) {
 		background: color-mix(in srgb, var(--surface) 88%, transparent);
+	}
+
+	/* Terrain layer blended onto the basemap; labels stay crisp on top. */
+	.map-shell :global(.hillshade-layer) {
+		mix-blend-mode: multiply;
+	}
+
+	.map-shell :global(.labels-layer) {
+		mix-blend-mode: normal;
 	}
 </style>

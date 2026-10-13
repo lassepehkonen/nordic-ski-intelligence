@@ -421,7 +421,7 @@ function fmiEndpoint(resort: PilotResort): string {
 	// snowDepthCm; hourly snowfall is derived at parse time from precipitation + temperature.
 	url.searchParams.set(
 		'parameters',
-		'Temperature,WindSpeedMS,Precipitation1h,SnowDepth'
+		'Temperature,WindSpeedMS,WindDirection,Precipitation1h,SnowDepth'
 	);
 	// Four days of day-by-day forecasting: HARMONIE serves up to ~108 hourly steps
 	// only when an explicit endtime is passed (default stops at 50).

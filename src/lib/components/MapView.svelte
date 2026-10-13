@@ -6,7 +6,6 @@
 	import { localizeHref } from '#lib/paraglide/runtime.js';
 	import type { ResortView } from '#lib/server/resorts/product-view.js';
 	import { formatCount, countryName, scoreTone } from '#lib/i18n/format.js';
-	import land from '#lib/assets/geo/nordic-land.json';
 	import borders from '#lib/assets/geo/nordic-borders.json';
 
 	/** Anchor points for the decorative country labels (lat, lon). */
@@ -83,27 +82,27 @@
 					zoomSnap: 0.25,
 					zoomDelta: 0.5,
 					minZoom: 3,
+					maxZoom: 17,
 					worldCopyJump: false,
 					center: [64, 16],
 					zoom: 4
 				});
 
-			// NOTE: no raster hillshade layer. The Esri hillshade JPEG is opaque (white = flat
-			// areas) and CSS blending does not reach the vector panes below in Leaflet's
-			// stacking context, so any full-map hillshade paints as a pale film over the
-			// whole map including water. Revisit with a proper terrain tile style later.
+				// Esri World Topo as the basemap: proper topographic background (terrain shading,
+				// roads and names) that stays readable when zoomed to a single resort. Replaces the
+				// earlier experiments (offline vector shapes, opaque hillshade overlay).
+				L.tileLayer(
+					'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+					{
+						minZoom: 3,
+						maxZoom: 17,
+						attribution:
+							'Tiles &copy; Esri — Source: Esri, USGS, NOAA, Garmin, HERE, GIS User Community'
+					}
+				).addTo(instance);
 
-			L.geoJSON(land as unknown as GeoJsonObject, {
-					attribution: m.mapAttribution(),
-					interactive: false,
-					style: () => ({
-						color: colour.landLine,
-						weight: 0.8,
-						fillColor: colour.land,
-						fillOpacity: 1
-					})
-				}).addTo(instance);
-
+				// Keep a light outline of the Nordic borders above the raster basemap so the
+				// three-country context reads at a glance while zoomed in.
 				L.geoJSON(borders as unknown as GeoJsonObject, {
 					interactive: false,
 					style: () => ({ color: colour.border, weight: 1, opacity: 0.7, dashArray: '2 4' })

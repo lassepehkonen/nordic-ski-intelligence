@@ -159,9 +159,26 @@
 					>
 				</div>
 				<div class="metric">
-					<span class="metric-label">{m.labelSnowQuality()}</span>
-					<span class="metric-value">—</span>
-				</div>
+						<span class="metric-label">{m.labelSnowQuality()}</span>
+						<span class="metric-value">
+							{#if resort.weather.snow.quality}
+							{@const q = resort.weather.snow.quality}
+							{@const qualityLabel = ({
+								'fresh-powder': m.snowQualityFreshPowder(),
+								'dry-preserved': m.snowQualityDryPreserved(),
+								'moist-settled': m.snowQualityMoistSettled(),
+								'crusted': m.snowQualityCrusted(),
+								'no-snow': m.snowQualityNoSnow()
+							} as Record<string, string>)[q.label] ?? q.label}
+							<span class="chip" class:chip-fresh={q.label === 'fresh-powder'}
+								class:chip-warn={q.label === 'moist-settled' || q.label === 'crusted'}>
+								{qualityLabel} {q.score}
+							</span>
+						{:else}
+								<span>—</span>
+							{/if}
+						</span>
+					</div>
 			</div>
 			<p class="muted" style="margin-top:.6rem">
 				{m.labelSource()}:

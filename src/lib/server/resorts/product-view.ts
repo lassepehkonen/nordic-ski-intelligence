@@ -24,6 +24,7 @@ import {
 	type ScoringComponentStatus,
 	type ScoringFreshnessState
 } from '../scoring/index.js';
+import { computeSnowQuality } from '../scoring/snow-quality.js';
 import { timeZoneFor } from '#lib/i18n/format.js';
 
 export type SourceKind = 'location' | 'inventory' | 'status' | 'weather' | 'snow';
@@ -161,6 +162,12 @@ export interface ResortView {
 			readonly recentSnowfall24hCm: number | null;
 			readonly observedAt: string | null;
 			readonly sourceUrl: string | null;
+			/** Weather-driven powder-preservation estimate; label is an i18n key suffix. */
+			readonly quality: {
+				readonly score: number;
+				/** 'fresh-powder' | 'dry-preserved' | 'moist-settled' | 'crusted' | 'no-snow' */
+				readonly label: string;
+			} | null;
 		};
 	};
 	/** Open shares as fractions in [0, 1]; null whenever the counts are unknown or zero. */
@@ -588,7 +595,17 @@ export function buildResortView(resort: PilotProductResort, options: { now: Date
 				sourceUrl:
 					isFiniteNumber(resort.weather.snow.depthCm) || !resort.weather.snow.sourceUrl
 						? (isoOrNull(resort.weather.snow.sourceUrl) ?? resort.weather.sourceUrl)
-						: resort.weather.snow.sourceUrl
+						: resort.weather.snow.sourceUrl,
+				quality: computeSnowQuality({
+					points: resort.weather.forecast.map((point) => ({
+						validAt: point.validAt,
+						airTemperatureC: point.airTemperatureC,
+						windSpeedMs: point.windSpeedMs,
+						snowfallMm: point.snowfallMm,
+						precipitationMm: point.precipitationMm,
+						snowDepthCm: point.snowDepthCm
+					}))
+				})
 			}
 		},
 		terrain: {

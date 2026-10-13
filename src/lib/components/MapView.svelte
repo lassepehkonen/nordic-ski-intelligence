@@ -75,9 +75,9 @@
 				const instance = L.map(canvas, {
 					zoomControl: true,
 					attributionControl: true,
-					// Wheel zoom is armed only while the pointer is over the map, so the page keeps
-					// scrolling normally everywhere else.
-					scrollWheelZoom: false,
+					// Wheel zooms the map while the pointer is over it; the page keeps scrolling
+					// normally everywhere else, which is what users expect from an embedded map.
+					scrollWheelZoom: true,
 					wheelPxPerZoomLevel: 120,
 					inertia: true,
 					zoomSnap: 0.25,
@@ -87,22 +87,18 @@
 					center: [64, 16],
 					zoom: 4
 				});
-				instance.on('mouseenter', () => instance.scrollWheelZoom.enable());
-				instance.on('mouseleave', () => instance.scrollWheelZoom.disable());
 
 				// Terrain relief from Esri World Hillshade sits between the vector land shapes and
 				// the resort markers: shading appears on the pale land fill without touching pins.
 				const hillshadePane = instance.createPane('hillshade');
 				hillshadePane.style.zIndex = '405';
-				const resortPane = instance.createPane('resortMarkers');
-				resortPane.style.zIndex = '420';
 				L.tileLayer(
 					'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
 					{
 						pane: 'hillshade',
 						minZoom: 3,
 						maxZoom: 16,
-						opacity: 0.3,
+						opacity: 0.55,
 						className: 'map-hillshade',
 						attribution: 'Hillshade &copy; <a href="https://www.esri.com/">Esri</a>'
 					}
@@ -190,8 +186,7 @@
 					color: '#ffffff',
 					weight: 2,
 					fillColor: fill,
-					fillOpacity: 1,
-					pane: 'resortMarkers'
+					fillOpacity: 1
 				});
 
 				const tooltip = document.createElement('div');

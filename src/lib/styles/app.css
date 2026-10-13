@@ -771,6 +771,12 @@ td.best {
 	mix-blend-mode: multiply;
 }
 
+/* Global reset svg rules (max-width) collapse the Leaflet overlay SVGs to 0 width;
+   every Leaflet-created svg must size to its width/height attributes again. */
+.map-frame .leaflet-pane svg {
+	max-width: none;
+}
+
 /* Decorative country labels: the map orients a visitor, the list carries the information. */
 .map-country-label {
 	display: inline-block;

@@ -27,8 +27,8 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<meta name="theme-color" content="#f6f8f7" media="(prefers-color-scheme: light)" />
-	<meta name="theme-color" content="#101619" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f2f6f4" media="(prefers-color-scheme: light)" />
+	<meta name="theme-color" content="#131b17" media="(prefers-color-scheme: dark)" />
 </svelte:head>
 
 <a class="skip-link" href="#main">{m.skipToContent()}</a>

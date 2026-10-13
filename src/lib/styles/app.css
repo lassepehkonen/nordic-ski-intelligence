@@ -1,7 +1,7 @@
 /* Nordic Ski Intelligence — product design system (Phase 7).
-   Calm, typography-first Nordic outdoor aesthetic: cold paper surfaces, a single fjord accent,
-   snow-green for good conditions, warm rust for warnings. Tokens only; components never
-   hard-code colours, so the dark scheme below costs nothing extra. */
+   Winter-fresh Nordic outdoor aesthetic: deep pine/evergreen surfaces, a frost-mint accent,
+   snow-green for good conditions, warm amber for warnings. Tokens only; components never
+   hard-code colours, so the light scheme below costs nothing extra. */
 
 :root {
 	--font-sans:
@@ -9,67 +9,75 @@
 		'Helvetica Neue', sans-serif;
 	--font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Mono', Menlo, monospace;
 
-	--paper: #f6f8f7;
+	--paper: #f2f6f4;
 	--surface: #ffffff;
-	--surface-2: #eef2f2;
-	--surface-3: #e4eaeb;
+	--surface-2: #ecf2ef;
+	--surface-3: #e2ebe7;
 	/* Map palette: land, water and lines must separate clearly at Nordic zoom levels. */
-	--map-water: #d3e0e9;
-	--map-land: #fdfdfc;
-	--map-land-line: #a9bcc2;
-	--map-border: #8fa6ad;
-	--ink: #0f1a1f;
-	--ink-2: #3d4f58;
-	--ink-3: #6b7c85;
-	--line: #dde4e5;
-	--line-2: #c6d1d3;
+	--map-water: #d7e6e0;
+	--map-land: #fbfdfb;
+	--map-land-line: #9fb8ae;
+	--map-border: #7d9c8e;
+	--ink: #14211c;
+	--ink-2: #3b4f46;
+	--ink-3: #64796f;
+	--line: #dce5e0;
+	--line-2: #c4d3cb;
 
-	--accent: #0d5b6b;
-	--accent-2: #0a4753;
-	--accent-soft: #e3eff1;
+	--accent: #0f6b52;
+	--accent-2: #0b5340;
+	--accent-soft: #e2f2eb;
 	--accent-ink: #ffffff;
-	--snow: #2c6a4c;
-	--snow-soft: #e4f0e8;
-	--warn: #96551a;
-	--warn-soft: #f8eddf;
-	--stop: #8a2f2f;
-	--stop-soft: #f7e7e6;
+	--snow: #1e7a52;
+	--snow-soft: #dff2e7;
+	--warn: #a06018;
+	--warn-soft: #f9eedc;
+	--stop: #8f2f2b;
+	--stop-soft: #f8e8e5;
 
 	--radius-lg: 16px;
 	--radius: 12px;
 	--radius-sm: 8px;
 	--radius-pill: 999px;
-	--shadow-1: 0 1px 2px rgba(15, 26, 31, 0.06);
-	--shadow-2: 0 1px 2px rgba(15, 26, 31, 0.05), 0 14px 30px -22px rgba(15, 26, 31, 0.45);
+	--shadow-1: 0 1px 2px rgba(16, 28, 23, 0.06);
+	--shadow-2: 0 1px 2px rgba(16, 28, 23, 0.05), 0 14px 30px -22px rgba(16, 28, 23, 0.45);
 	--maxw: 1180px;
 	--pad: clamp(1rem, 0.55rem + 1.6vw, 2rem);
 }
 
+@media (prefers-color-scheme: light) {
+	:root {
+		color-scheme: light;
+	}
+}
+
 @media (prefers-color-scheme: dark) {
 	:root {
-		--paper: #101619;
-		--surface: #161e22;
-		--surface-2: #1c262b;
-		--surface-3: #243036;
-		--map-water: #0a1216;
-		--map-land: #223036;
-		--map-land-line: #3f5a64;
-		--map-border: #64838f;
-		--ink: #edf3f4;
-		--ink-2: #b3c2c8;
-		--ink-3: #84969d;
-		--line: #263238;
-		--line-2: #33434a;
-		--accent: #5cb8c8;
-		--accent-2: #7ccddb;
-		--accent-soft: #17323a;
-		--accent-ink: #0b1417;
-		--snow: #74c79a;
-		--snow-soft: #16302a;
-		--warn: #e0a566;
-		--warn-soft: #33261a;
-		--stop: #e58f8f;
-		--stop-soft: #3a2323;
+		color-scheme: dark;
+		/* Deep pine night — dark and calm but not black, no blue cast. */
+		--paper: #131b17;
+		--surface: #1a241f;
+		--surface-2: #202b26;
+		--surface-3: #28352e;
+		--map-water: #0c1411;
+		--map-land: #26312b;
+		--map-land-line: #3e5247;
+		--map-border: #5d7a6c;
+		--ink: #eef4f0;
+		--ink-2: #bccbc3;
+		--ink-3: #8a9c91;
+		--line: #27332d;
+		--line-2: #35433b;
+		--accent: #56c7a0;
+		--accent-2: #79d8b6;
+		--accent-soft: #17352b;
+		--accent-ink: #0c1512;
+		--snow: #6ecf9c;
+		--snow-soft: #153024;
+		--warn: #e2a95f;
+		--warn-soft: #33281a;
+		--stop: #e5908b;
+		--stop-soft: #382424;
 		--shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
 		--shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 34px -24px rgba(0, 0, 0, 0.8);
 	}

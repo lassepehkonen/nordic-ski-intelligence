@@ -44,12 +44,12 @@
 		const read = (name: string, fallback: string) =>
 			style.getPropertyValue(name).trim() || fallback;
 		return {
-			accent: read('--accent', '#0d5b6b'),
-			good: read('--snow', '#2c6a4c'),
-			muted: read('--ink-3', '#6b7c85'),
-			land: read('--map-land', '#f8faf9'),
-			landLine: read('--map-land-line', '#b6c5ca'),
-			border: read('--map-border', '#93a7ad')
+			accent: read('--accent', '#0f6b52'),
+			good: read('--snow', '#1e7a52'),
+			muted: read('--ink-3', '#64796f'),
+			land: read('--map-land', '#fbfdfb'),
+			landLine: read('--map-land-line', '#9fb8ae'),
+			border: read('--map-border', '#7d9c8e')
 		};
 	}
 

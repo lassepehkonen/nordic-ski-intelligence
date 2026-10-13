@@ -766,10 +766,7 @@ td.best {
 	font-size: 0.68rem;
 }
 
-/* Hillshade reads as terrain relief on the pale land fill, not as a photo overlay. */
-.map-hillshade {
-	mix-blend-mode: multiply;
-}
+/* (no raster hillshade: removed — opaque tiles painted a pale film over the map) */
 
 /* Global reset svg rules (max-width) collapse the Leaflet overlay SVGs to 0 width;
    every Leaflet-created svg must size to its width/height attributes again. */

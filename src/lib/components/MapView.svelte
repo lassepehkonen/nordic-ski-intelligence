@@ -88,26 +88,12 @@
 					zoom: 4
 				});
 
-				// Terrain relief from Esri World Hillshade sits between the vector land shapes and
-				// the resort markers: shading appears on the pale land fill without touching pins.
-				const hillshadePane = instance.createPane('hillshade');
-				hillshadePane.style.zIndex = '405';
-				L.tileLayer(
-					'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
-					{
-							pane: 'hillshade',
-							minZoom: 3,
-							maxZoom: 16,
-							// Must stay 1: partial opacity would paint the opaque JPEG normally over the
-							// map (white film). With full opacity the multiply blend keeps white neutral
-							// and only the relief shading darkens the basemap.
-							opacity: 1,
-							className: 'map-hillshade',
-							attribution: 'Hillshade &copy; <a href="https://www.esri.com/">Esri</a>'
-						}
-				).addTo(instance);
+			// NOTE: no raster hillshade layer. The Esri hillshade JPEG is opaque (white = flat
+			// areas) and CSS blending does not reach the vector panes below in Leaflet's
+			// stacking context, so any full-map hillshade paints as a pale film over the
+			// whole map including water. Revisit with a proper terrain tile style later.
 
-				L.geoJSON(land as unknown as GeoJsonObject, {
+			L.geoJSON(land as unknown as GeoJsonObject, {
 					attribution: m.mapAttribution(),
 					interactive: false,
 					style: () => ({

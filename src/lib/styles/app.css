@@ -771,7 +771,7 @@ td.best {
 /* Slightly darker, calmer basemap: ton down the bright Esri Topo colours
    and nuke the harsh white; markers and attributions stay unaffected. */
 .map-frame .map-basemap {
-	filter: brightness(0.82) saturate(1.08);
+	filter: brightness(0.7) saturate(1.1);
 }
 
 /* Global reset svg rules (max-width) collapse the Leaflet overlay SVGs to 0 width;

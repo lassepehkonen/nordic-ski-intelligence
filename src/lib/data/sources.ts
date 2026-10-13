@@ -56,4 +56,44 @@ export function wikipediaSource(
 	};
 }
 
+/** Date the OpenSkiData snapshot and Fnugg API responses below were actually read. */
+const OPEN_SOURCE_READ_AT = '2026-10-13T16:15:00.000Z';
+
+/**
+ * OpenSkiData static ski-area snapshot, verified against the live daily build on the read date.
+ * Usage terms: ODbL with multi-source attribution (OpenSkiData/OpenSkiMap, © OpenStreetMap
+ * contributors, Skimap.org, Who's On First, © Mapterhorn), automated download at most once per
+ * day, hosted vector tiles may not be consumed directly. Not a live-conditions source.
+ */
+export function openSkiDataSource(): SourceRef {
+	return {
+		id: 'openskidata',
+		kind: 'reference',
+		url: 'https://openskidata.org/',
+		status: 'rights_pending',
+		retrievedAt: OPEN_SOURCE_READ_AT,
+		license: 'ODbL (OSM, Skimap.org, Who’s On First, Mapterhorn attribution required)',
+		note: 'Static resort/run/lift geometry and statistics. Weekly or less refresh; metadata.json checked before each download.'
+	};
+}
+
+/**
+ * Fnugg v1 open API for Norwegian resorts. Verified live on the read date: resort record with
+ * slopes/lifts lists and open counts, conditions (yr.no-reported weather + snow), season dates.
+ * Usage terms: data must be attributed to fnugg.no, consent is revocable, and the data may not be
+ * used in a service "essentially identical to fnugg.no" — this comparison product needs the
+ * owner's written waiver before any commercial redisplay (ADR-0008 gate still applies).
+ */
+export function fnuggSource(resortId: number): SourceRef {
+	return {
+		id: `fnugg-${resortId}`,
+		kind: 'reference',
+		url: 'https://api.fnugg.no/docs/v1',
+		status: 'rights_pending',
+		retrievedAt: OPEN_SOURCE_READ_AT,
+		license: null,
+		note: 'Norwegian resort conditions/lift-slope status via the open Fnugg API. Attribution to fnugg.no required; written waiver needed before production use.'
+	};
+}
+
 export const REFERENCE_READ_DATE = REFERENCE_READ_AT;

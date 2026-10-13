@@ -9,7 +9,7 @@
  */
 
 import type { Resort } from '../domain/types.js';
-import { operatorSiteSource, wikipediaSource } from './sources.js';
+import { operatorSiteSource, openSkiDataSource, fnuggSource, wikipediaSource } from './sources.js';
 
 const FENNOSCANDIAN_SEASON = {
 	opensMonth: null,
@@ -75,7 +75,8 @@ export const RESORTS: readonly Resort[] = [
 				'https://fi.wikipedia.org/wiki/Talviurheilukeskus',
 				'fi',
 				'Finnish table of winter sports centres: pistes, lifts, trail kilometres and bed places.'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -158,7 +159,8 @@ export const RESORTS: readonly Resort[] = [
 				'wikipedia-fi-fi-resorts',
 				'https://fi.wikipedia.org/wiki/Talviurheilukeskus',
 				'fi'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -239,7 +241,8 @@ export const RESORTS: readonly Resort[] = [
 				'wikipedia-fi-fi-resorts',
 				'https://fi.wikipedia.org/wiki/Talviurheilukeskus',
 				'fi'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -314,7 +317,8 @@ export const RESORTS: readonly Resort[] = [
 				'wikipedia-fi-fi-resorts',
 				'https://fi.wikipedia.org/wiki/Talviurheilukeskus',
 				'fi'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -410,7 +414,8 @@ export const RESORTS: readonly Resort[] = [
 				'https://sv.wikipedia.org/wiki/Skistar',
 				'sv',
 				'Operator-advertised lift, piste and piste-kilometre table for the Skistar destinations.'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -495,7 +500,8 @@ export const RESORTS: readonly Resort[] = [
 				'https://sv.wikipedia.org/wiki/Skistar',
 				'sv',
 				'Operator-advertised lift, piste and piste-kilometre table for the Skistar destinations.'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -570,7 +576,8 @@ export const RESORTS: readonly Resort[] = [
 				'https://sv.wikipedia.org/wiki/Skistar',
 				'sv',
 				'Operator-advertised lift, piste and piste-kilometre table for the Skistar destinations.'
-			)
+			),
+			openSkiDataSource()
 		],
 		translations: {
 			fi: {
@@ -649,7 +656,9 @@ export const RESORTS: readonly Resort[] = [
 				'https://sv.wikipedia.org/wiki/Skistar',
 				'sv',
 				'Operator-advertised lift, piste and piste-kilometre table for the Skistar destinations.'
-			)
+			),
+			openSkiDataSource(),
+			fnuggSource(2)
 		],
 		translations: {
 			fi: {
@@ -727,7 +736,9 @@ export const RESORTS: readonly Resort[] = [
 				'https://sv.wikipedia.org/wiki/Skistar',
 				'sv',
 				'Operator-advertised lift, piste and piste-kilometre table for the Skistar destinations.'
-			)
+			),
+			openSkiDataSource(),
+			fnuggSource(5)
 		],
 		translations: {
 			fi: {
@@ -805,7 +816,9 @@ export const RESORTS: readonly Resort[] = [
 		sources: [
 			operatorSiteSource('hafjell', 'https://www.hafjell.no/'),
 			wikipediaSource('wikipedia-en-hafjell', 'https://en.wikipedia.org/wiki/Hafjell', 'en'),
-			wikipediaSource('wikipedia-no-hafjell', 'https://no.wikipedia.org/wiki/Hafjell', 'no')
+			wikipediaSource('wikipedia-no-hafjell', 'https://no.wikipedia.org/wiki/Hafjell', 'no'),
+			openSkiDataSource(),
+			fnuggSource(12)
 		],
 		translations: {
 			fi: {

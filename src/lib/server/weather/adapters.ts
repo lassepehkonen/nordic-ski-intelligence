@@ -393,6 +393,13 @@ function fmiEndpoint(resort: PilotResort): string {
 	url.searchParams.set('storedquery_id', 'fmi::forecast::harmonie::surface::point::simple');
 	url.searchParams.set('latlon', `${resort.location.latitude},${resort.location.longitude}`);
 	url.searchParams.set('parameters', 'Temperature,WindSpeedMS,Precipitation1h');
+	// Four days of day-by-day forecasting: HARMONIE serves up to ~108 hourly steps
+	// only when an explicit endtime is passed (default stops at 50).
+	url.searchParams.set('timestep', '60');
+	url.searchParams.set(
+		'endtime',
+		new Date(Date.now() + 108 * 3_600_000).toISOString().replace(/\.\d+Z$/, ':00:00Z')
+	);
 	return url.toString();
 }
 

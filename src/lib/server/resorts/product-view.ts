@@ -24,6 +24,7 @@ import {
 	type ScoringComponentStatus,
 	type ScoringFreshnessState
 } from '../scoring/index.js';
+import { timeZoneFor } from '#lib/i18n/format.js';
 
 export type SourceKind = 'location' | 'inventory' | 'status' | 'weather' | 'snow';
 
@@ -97,6 +98,22 @@ export interface ForecastPointView {
 	readonly precipitationPeriodHours: number | null;
 }
 
+/**
+ * One day in the four-day day-by-day forecast. Temperatures are the min/max over the day's
+ * hourly points; precipitation and snowfall are daily sums (null when no point reports a
+ * value — unknown is not zero).
+ */
+export interface ForecastDayView {
+	/** ISO date of the forecast day in the resort's country timezone (YYYY-MM-DD). */
+	readonly date: string;
+	readonly tempMinC: number | null;
+	readonly tempMaxC: number | null;
+	readonly precipitationMm: number | null;
+	readonly snowfallMm: number | null;
+	readonly windMaxMs: number | null;
+	readonly pointCount: number;
+}
+
 export interface ResortView {
 	readonly slug: string;
 	readonly name: string;
@@ -132,6 +149,8 @@ export interface ResortView {
 		readonly sourceUpdatedAt: string | null;
 		readonly current: ForecastPointView | null;
 		readonly forecast: readonly ForecastPointView[];
+		/** Day-by-day forecast (up to 4 days), aggregated from hourly points. */
+		readonly forecastDaily: readonly ForecastDayView[];
 		/** Snowfall summed over the scoring forecast window; null when no point reports any. */
 		readonly forecastSnowMm48h: number | null;
 		readonly snow: {
@@ -360,6 +379,59 @@ function sumSnowfall(
 	return total;
 }
 
+/**
+ * Aggregates hourly forecast points into day rows (in the resort's local timezone) for the
+ * next four distinct days. Missing/null values propagate as null — unknown is not zero.
+ */
+function buildForecastDaily(
+	points: readonly ForecastPointView[],
+	countryCode: string
+): ForecastDayView[] {
+	const tz = timeZoneFor(countryCode);
+	const formatter = new Intl.DateTimeFormat('en-CA', {
+		timeZone: tz,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	});
+	const byDay = new Map<string, ForecastPointView[]>();
+	const today = formatter.format(new Date());
+	for (const point of points) {
+		const date = new Date(point.validAt);
+		if (!Number.isFinite(date.getTime())) continue;
+		const key = formatter.format(date);
+		if (key <= today) continue; // today's partial day is not one of the next four
+		byDay.set(key, [...(byDay.get(key) ?? []), point]);
+	}
+	return [...byDay.entries()]
+		.filter(([key]) => key > today)
+		.sort(([a], [b]) => a.localeCompare(b))
+		.slice(0, 4)
+		.map(([date, dayPoints]) => {
+			const temps = dayPoints
+				.map((p) => p.airTemperatureC)
+				.filter((t): t is number => t !== null);
+			const winds = dayPoints
+				.map((p) => p.windSpeedMs)
+				.filter((w): w is number => w !== null);
+			const precip = dayPoints
+				.map((p) => p.precipitationMm)
+				.filter((v): v is number => v !== null);
+			const snow = dayPoints
+				.map((p) => p.snowfallMm)
+				.filter((v): v is number => v !== null);
+			return {
+				date,
+				tempMinC: temps.length ? Math.min(...temps) : null,
+				tempMaxC: temps.length ? Math.max(...temps) : null,
+				precipitationMm: precip.length ? Number(precip.reduce((a, b) => a + b, 0).toFixed(1)) : null,
+				snowfallMm: snow.length ? Number(snow.reduce((a, b) => a + b, 0).toFixed(1)) : null,
+				windMaxMs: winds.length ? Math.max(...winds) : null,
+				pointCount: dayPoints.length
+			};
+		});
+}
+
 function collectSources(resort: PilotProductResort): ResortSourceView[] {
 	const sources: ResortSourceView[] = [
 		{
@@ -440,6 +512,7 @@ export function buildResortView(resort: PilotProductResort, options: { now: Date
 			current: resort.weather.current ? toForecastPoint(resort.weather.current) : null,
 			forecast,
 			forecastSnowMm48h: sumSnowfall(forecast, options.now, forecastWindowHours),
+			forecastDaily: buildForecastDaily(forecast, resort.countryCode),
 			snow: {
 				depthCm: isFiniteNumber(resort.weather.snow.depthCm) ? resort.weather.snow.depthCm : null,
 				recentSnowfall24hCm: isFiniteNumber(resort.weather.snow.recentSnowfall24hCm)

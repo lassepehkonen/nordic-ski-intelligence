@@ -12,6 +12,7 @@
 		countryName,
 		formatCm,
 		formatCount,
+		formatDate,
 		formatDateTime,
 		formatDecimal,
 		formatHour,
@@ -80,7 +81,7 @@
 		}
 	}
 
-	const forecastRows = $derived((resort?.weather.forecast ?? []).slice(0, 12));
+	const forecastRows = $derived(resort?.weather.forecastDaily ?? []);
 </script>
 
 <SeoHead seo={data.seo} locale={data.locale} />
@@ -303,18 +304,22 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each forecastRows as point (point.validAt)}
+						{#each forecastRows as day (day.date)}
 							<tr>
 								<th scope="row">
-									<time datetime={point.validAt}>
-										{formatWeekday(point.validAt, data.locale, resort.countryCode)}
-										{formatHour(point.validAt, data.locale, resort.countryCode)}
+									<time datetime={day.date}>
+										{formatWeekday(day.date + 'T12:00:00', data.locale, resort.countryCode)}
+										{formatDate(day.date + 'T12:00:00', data.locale, resort.countryCode)}
 									</time>
 								</th>
-								<td class="numeric">{formatTemperature(point.airTemperatureC, data.locale)}</td>
-								<td class="numeric">{formatPrecipitation(point.precipitationMm, data.locale)}</td>
-								<td class="numeric">{formatSnowfall(point.snowfallMm, data.locale)}</td>
-								<td class="numeric">{formatWind(point.windSpeedMs, data.locale)}</td>
+								<td class="numeric">
+									{day.tempMinC === null || day.tempMaxC === null
+										? m.notAvailable()
+										: `${formatTemperature(day.tempMinC, data.locale)} … ${formatTemperature(day.tempMaxC, data.locale)}`}
+								</td>
+								<td class="numeric">{formatPrecipitation(day.precipitationMm, data.locale)}</td>
+								<td class="numeric">{formatSnowfall(day.snowfallMm, data.locale)}</td>
+								<td class="numeric">{formatWind(day.windMaxMs, data.locale)}</td>
 							</tr>
 						{/each}
 					</tbody>

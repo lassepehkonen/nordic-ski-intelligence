@@ -398,7 +398,7 @@ function fmiEndpoint(resort: PilotResort): string {
 	url.searchParams.set('timestep', '60');
 	url.searchParams.set(
 		'endtime',
-		new Date(Date.now() + 108 * 3_600_000).toISOString().replace(/\.\d+Z$/, ':00:00Z')
+		new Date(Date.now() + 108 * 3_600_000).toISOString().replace(/\.\d+Z$/, 'Z')
 	);
 	return url.toString();
 }

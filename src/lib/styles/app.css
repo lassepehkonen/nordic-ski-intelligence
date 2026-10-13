@@ -766,6 +766,11 @@ td.best {
 	font-size: 0.68rem;
 }
 
+/* Hillshade reads as terrain relief on the pale land fill, not as a photo overlay. */
+.map-hillshade {
+	mix-blend-mode: multiply;
+}
+
 /* Decorative country labels: the map orients a visitor, the list carries the information. */
 .map-country-label {
 	display: inline-block;

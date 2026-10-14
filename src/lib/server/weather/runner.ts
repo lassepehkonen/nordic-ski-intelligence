@@ -70,7 +70,7 @@ export async function runPilotWeather(
 	const sourceIds = new Set<string>();
 
 	for (const resort of resorts) {
-		const result = await collectResortForecast(resort, collector);
+		const result = await collectResortForecast(resort, collector, now);
 		const provider = resort.weather.provider;
 		const providerRequests = result.providerRequests ?? 0;
 		providerRequestsByProvider[provider] += providerRequests;

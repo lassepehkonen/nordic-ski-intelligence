@@ -116,10 +116,13 @@
 					element.className = 'map-country-label';
 					element.textContent = countryName(label.code, locale);
 					element.setAttribute('aria-hidden', 'true');
-					L.marker([label.lat, label.lon], {
+					const marker = L.marker([label.lat, label.lon], {
 						interactive: false,
+						keyboard: false,
 						icon: L.divIcon({ className: 'map-country', html: element, iconSize: [0, 0] })
 					}).addTo(instance);
+					// The wrapper div is what assistive tech would announce; hide it too, not only the span.
+					marker.getElement()?.setAttribute('aria-hidden', 'true');
 				}
 
 				// Leaflet's own zoom buttons ship English titles; the product is multilingual.

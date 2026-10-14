@@ -44,13 +44,16 @@ describe('pilot weather collection', () => {
 		expect(result.results).toHaveLength(10);
 		expect(result.successCount).toBe(10);
 		expect(result.failureCount).toBe(0);
-		expect(result.totalProviderRequests).toBe(10);
-		expect(result.providerRequestsByProvider).toEqual({ fmi: 6, smhi: 2, 'met-no': 2 });
-		expect(calls).toHaveLength(10);
+		// Every FMI fixture series is far shorter than the 90 h coverage floor, so each of the six
+		// FMI resorts also triggers the met.no short-series extension (1b051e2). Extension requests
+		// are billed to the resort's own provider, so fmi = 6 primary + 6 extensions = 12.
+		expect(result.totalProviderRequests).toBe(16);
+		expect(result.providerRequestsByProvider).toEqual({ fmi: 12, smhi: 2, 'met-no': 2 });
+		expect(calls).toHaveLength(16);
 		expect(
 			calls.find((call) => call.url.includes('api.met.no'))?.headers.get('user-agent')
 		).toContain('NordicSkiIntelligence');
-		expect(logger.info).toHaveBeenCalledTimes(10);
+		expect(logger.info).toHaveBeenCalledTimes(10); // one per resort, not per request
 	});
 
 	it('records malformed provider payloads as parse failures and counts the requests', async () => {

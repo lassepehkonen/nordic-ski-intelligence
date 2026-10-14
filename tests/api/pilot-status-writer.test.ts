@@ -15,7 +15,7 @@ describe('pilot status writer', () => {
 			supabaseUrl: 'https://ugeoxrfagumamxyhqnjw.supabase.co',
 			serviceRoleKey: 'service-role-test',
 			fetchImpl,
-			now: () => new Date('2026-10-12T12:00:00Z')
+			now: () => new Date('2026-10-13T21:00:00Z')
 		});
 
 		await writer.publishSnapshots([levi!]);
@@ -28,10 +28,10 @@ describe('pilot status writer', () => {
 			status_open_pistes: 3,
 			status_total_pistes: 44,
 			status_state: 'fresh',
-			status_checked_at: '2026-10-12T11:29:27Z',
+			status_checked_at: '2026-10-13T20:42:19Z',
 			status_source_url: 'https://www.levi.fi/en/ski/ski-resort-today/',
 			status_attribution: 'Levi official count page; four numeric counts only',
-			updated_at: '2026-10-12T12:00:00.000Z'
+			updated_at: '2026-10-13T21:00:00.000Z'
 		});
 		expect(calls[0]?.url).not.toMatch(/opendata|met\.no|smhi\.se/i);
 	});

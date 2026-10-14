@@ -513,43 +513,53 @@ async function extendShortSeries(
 	resort: PilotResort,
 	forecast: WeatherForecast,
 	collector: ReturnType<typeof createHttpCollector>,
-	collectedWarnings: ReadonlyArray<string>
-): Promise<{ data: WeatherForecast | null; warnings: ReadonlyArray<string> }> {
+	collectedWarnings: ReadonlyArray<string>,
+	now: () => Date = () => new Date()
+): Promise<{ data: WeatherForecast | null; warnings: ReadonlyArray<string>; requests: number }> {
 	const lastPoint = forecast.points.at(-1);
-	const nowMs = Date.now();
+	const nowMs = now().getTime();
 	const horizonOk =
 		!!lastPoint &&
 		Number.isFinite(Date.parse(lastPoint.validAt)) &&
 		Date.parse(lastPoint.validAt) - nowMs >= MIN_FORECAST_COVERAGE_HOURS * 3_600_000;
-	if (horizonOk || resort.weather.provider !== 'fmi') {
-		return { data: null, warnings: collectedWarnings };
-	}
+	if (!horizonOk && resort.weather.provider === 'fmi') {
+		// FMI HARMONIE sometimes publishes only ~60 h mid-cycle. met.no locationforecast carries
+		// the full horizon for the same coordinates, so top up the missing hours from it.
+		const collected = await collector.collect(buildMetNoSource(resort));
+		if (!collected.ok || !collected.data) {
+			return {
+				data: null,
+				warnings: [...collectedWarnings, 'fmi_series_short_without_met_no_fallback'],
+				requests: collected.providerRequests ?? 0
+			};
+		}
+		const parsed = decodeBody('met-no', collected.data.body);
+		if (!parsed.ok || !parsed.data) {
+			return {
+				data: null,
+				warnings: [...collectedWarnings, 'fmi_series_short_met_no_unparseable'],
+				requests: collected.providerRequests ?? 0
+			};
+		}
 
-	// FMI HARMONIE sometimes publishes only ~60 h mid-cycle. met.no locationforecast carries
-	// the full horizon for the same coordinates, so top up the missing hours from it.
-	const collected = await collector.collect(buildMetNoSource(resort));
-	if (!collected.ok || !collected.data) {
+		const byTimestamp = new Map(forecast.points.map((p) => [p.validAt, p]));
+		for (const point of parsed.data.points) {
+			const existing = byTimestamp.get(point.validAt);
+			if (existing && existing.airTemperatureC !== null) continue;
+			byTimestamp.set(
+				point.validAt,
+				existing ? { ...existing, ...filled(existing, point) } : point
+			);
+		}
+		const merged = [...byTimestamp.values()].sort((a, b) => a.validAt.localeCompare(b.validAt));
 		return {
-			data: null,
-			warnings: [...collectedWarnings, 'fmi_series_short_without_met_no_fallback']
+			data: { ...forecast, points: merged },
+			warnings: [...collectedWarnings, 'fmi_series_extended_with_met_no'],
+			requests: collected.providerRequests ?? 0
 		};
 	}
-	const parsed = decodeBody('met-no', collected.data.body);
-	if (!parsed.ok || !parsed.data) {
-		return { data: null, warnings: [...collectedWarnings, 'fmi_series_short_met_no_unparseable'] };
-	}
 
-	const byTimestamp = new Map(forecast.points.map((p) => [p.validAt, p]));
-	for (const point of parsed.data.points) {
-		const existing = byTimestamp.get(point.validAt);
-		if (existing && existing.airTemperatureC !== null) continue;
-		byTimestamp.set(point.validAt, existing ? { ...existing, ...filled(existing, point) } : point);
-	}
-	const merged = [...byTimestamp.values()].sort((a, b) => a.validAt.localeCompare(b.validAt));
-	return {
-		data: { ...forecast, points: merged },
-		warnings: [...collectedWarnings, 'fmi_series_extended_with_met_no']
-	};
+	return { data: null, warnings: collectedWarnings, requests: 0 };
 }
 
 /** Fill null fields of `base` with real values from `donor` (donor wins only where base is null). */
@@ -580,7 +590,8 @@ function decodeBody(provider: WeatherProvider, body: unknown): ParseResult<Weath
 
 export async function collectResortForecast(
 	resort: PilotResort,
-	collector = createHttpCollector()
+	collector = createHttpCollector(),
+	now: () => Date = () => new Date()
 ): Promise<ParseResult<CollectedWeatherForecast>> {
 	const source = weatherSourceFor(resort);
 	const collected = await collector.collect(source);
@@ -604,7 +615,7 @@ export async function collectResortForecast(
 			providerRequests: collected.providerRequests ?? 0
 		};
 	}
-	const validated = validateWeatherForecast(parsed.data);
+	const validated = validateWeatherForecast(parsed.data, now());
 	if (!validated.ok || !validated.data) {
 		return {
 			ok: false,
@@ -615,17 +626,22 @@ export async function collectResortForecast(
 		};
 	}
 
-	const extension = await extendShortSeries(resort, validated.data, collector, [
-		...collected.warnings,
-		...parsed.warnings,
-		...validated.warnings
-	]);
+	const extension = await extendShortSeries(
+		resort,
+		validated.data,
+		collector,
+		[...collected.warnings, ...parsed.warnings, ...validated.warnings],
+		now
+	);
+
+	// Real outbound cost: the primary provider call plus any met.no short-series top-up.
+	const totalRequests = (collected.providerRequests ?? 0) + (extension.requests ?? 0);
 
 	return {
 		ok: true,
 		data: {
 			forecast: extension.data ?? validated.data,
-			providerRequests: collected.providerRequests ?? 0,
+			providerRequests: totalRequests,
 			attempts: collected.data.attempts,
 			cacheHit: collected.data.cacheHit,
 			stale: collected.data.stale || validated.warnings.includes('weather_model_run_stale'),
@@ -636,7 +652,7 @@ export async function collectResortForecast(
 		},
 		errors: [],
 		warnings: extension.warnings,
-		providerRequests: collected.providerRequests ?? 0,
+		providerRequests: totalRequests,
 		fatal: false
 	};
 }

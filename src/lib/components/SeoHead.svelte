@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { OG_LOCALES, type Seo } from '#lib/seo.js';
+	import { m } from '#lib/paraglide/messages.js';
+	import ogImageUrl from '#lib/assets/og-image.png?url';
 
 	let { seo, locale }: { seo: Seo; locale: string } = $props();
 </script>
@@ -18,9 +20,14 @@
 	<meta property="og:url" content={seo.canonical} />
 	<meta property="og:locale" content={OG_LOCALES[locale] ?? 'en_GB'} />
 	<meta property="og:site_name" content="Nordic Ski Intelligence" />
-	<meta name="twitter:card" content="summary" />
+	<meta property="og:image" content={ogImageUrl} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content={m.ogImageAlt()} />
+	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={seo.title} />
 	<meta name="twitter:description" content={seo.description} />
+	<meta name="twitter:image" content={ogImageUrl} />
 	{#if seo.jsonLdTag}
 		<!--
 			JSON-LD has to reach the document as a script element, and svelte:head cannot emit one

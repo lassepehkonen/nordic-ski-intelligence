@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<!--
+		Static Open Graph share image (1200 by 630).
+		Theme tokens from src/lib/styles/app.css: paper f3f6f7, ink 16211d,
+		accent b25a15, snow 237a4d. No text: language neutral by design, so one
+		image serves every locale (the og:title on each page does the talking).
+	-->
+	<defs>
+		<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#f3f6f7" />
+			<stop offset="1" stop-color="#e9eef0" />
+		</linearGradient>
+	</defs>
+
+	<!-- Sky -->
+	<rect width="1200" height="630" fill="url(#sky)" />
+
+	<!-- Distant ridgelines -->
+	<path
+		d="M0 320 L140 240 L260 310 L390 210 L520 300 L650 235 L780 305 L910 225 L1040 300 L1200 250 L1200 630 L0 630 Z"
+		fill="#dfe6e9"
+	/>
+	<path
+		d="M0 400 L180 320 L340 392 L500 305 L660 388 L830 315 L990 395 L1200 330 L1200 630 L0 630 Z"
+		fill="#c5d0d5"
+	/>
+
+	<!-- Slope silhouette -->
+	<path
+		d="M0 630 L340 430 L520 470 L760 395 L980 455 L1200 420 L1200 630 Z"
+		fill="#fcfdfd"
+	/>
+
+	<!-- Piste line -->
+	<path
+		d="M60 640 C 260 560 300 500 430 480 S 640 430 700 428"
+		fill="none"
+		stroke="#b25a15"
+		stroke-width="7"
+		stroke-linecap="round"
+		stroke-dasharray="2 26"
+	/>
+
+	<!-- Brand mark: the same mountain glyph as the favicon -->
+	<g transform="translate(96 110) scale(7.5)">
+		<path d="M12 1.5 3 21h4.2l4.8-10.2L16.8 21H21L12 1.5Z" fill="#16211d" />
+		<path d="M1.5 22.5h21" stroke="#16211d" stroke-width="1.6" opacity="0.5" />
+	</g>
+
+	<!-- Four-country dots: FI (snow green), SE, NO, and the fjord accent -->
+	<circle cx="620" cy="120" r="10" fill="#237a4d" />
+	<circle cx="660" cy="120" r="10" fill="#41544c" />
+	<circle cx="700" cy="120" r="10" fill="#8aa0a8" />
+	<circle cx="740" cy="120" r="10" fill="#b25a15" />
+</svg>

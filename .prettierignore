@@ -13,3 +13,11 @@ build/
 dist/
 coverage/
 .netlify/
+/src/lib/paraglide/
+/src/paraglide/
+/project.inlang/README.md
+/project.inlang/.meta.json
+/project.inlang/.lix/
+/project.inlang/cache/
+
+chrome-headless-shell/

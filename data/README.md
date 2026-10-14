@@ -8,7 +8,7 @@ Reference data snapshots used by the preview dataset and future collector develo
 
   **Licence:** ODbL — the data derive from OpenStreetMap and other sources. Required
   attribution: `Data from OpenSkiData / OpenSkiMap.org, © OpenStreetMap contributors (ODbL),
-  Skimap.org, Who's On First, © Mapterhorn`. Automated downloads at most once per day; hosted
+Skimap.org, Who's On First, © Mapterhorn`. Automated downloads at most once per day; hosted
   vector tiles at `tiles.openskimap.org` may not be consumed directly. Feature IDs are content
   hashes (unstable across builds) — join on the OSM or Skimap.org source URLs in the `sources`
   column, or Wikidata where present.

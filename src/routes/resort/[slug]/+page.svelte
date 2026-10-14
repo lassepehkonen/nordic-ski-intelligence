@@ -237,34 +237,12 @@
 			<StatGrid stats={snowStats} />
 		</Panel>
 
-		<Panel title={m.resort_lifts_title()}>
-			<StatGrid
-				stats={[
-					{
-						id: 'open_lifts',
-						label: m.resort_lifts_title(),
-						value:
-							metrics.openLifts === null || metrics.totalLifts === null
-								? notReported
-								: m.resort_open_of({
-										open: formatCount(metrics.openLifts, locale),
-										total: formatCount(metrics.totalLifts, locale)
-									}),
-						missing: metrics.openLifts === null || metrics.totalLifts === null
-					},
-					{
-						id: 'open_lift_ratio',
-						label: m.metric_open_lift_ratio(),
-						value:
-							liftRatio === null
-								? notReported
-								: m.resort_open_ratio({
-										percent: formatWholeNumber(Math.round(liftRatio * 100), locale)
-									}),
-						missing: liftRatio === null
-					}
-				]}
-			/>
+		<Panel title={m.resort_weather_title()}>
+			<StatGrid stats={weatherStats} />
+		</Panel>
+
+		<Panel title={m.resort_forecast_title()}>
+			<ForecastStrip forecast={data.conditions.forecast} />
 		</Panel>
 
 		<Panel title={m.resort_pistes_title()}>
@@ -297,12 +275,34 @@
 			/>
 		</Panel>
 
-		<Panel title={m.resort_weather_title()}>
-			<StatGrid stats={weatherStats} />
-		</Panel>
-
-		<Panel title={m.resort_forecast_title()}>
-			<ForecastStrip forecast={data.conditions.forecast} />
+		<Panel title={m.resort_lifts_title()}>
+			<StatGrid
+				stats={[
+					{
+						id: 'open_lifts',
+						label: m.resort_lifts_title(),
+						value:
+							metrics.openLifts === null || metrics.totalLifts === null
+								? notReported
+								: m.resort_open_of({
+										open: formatCount(metrics.openLifts, locale),
+										total: formatCount(metrics.totalLifts, locale)
+									}),
+						missing: metrics.openLifts === null || metrics.totalLifts === null
+					},
+					{
+						id: 'open_lift_ratio',
+						label: m.metric_open_lift_ratio(),
+						value:
+							liftRatio === null
+								? notReported
+								: m.resort_open_ratio({
+										percent: formatWholeNumber(Math.round(liftRatio * 100), locale)
+									}),
+						missing: liftRatio === null
+					}
+				]}
+			/>
 		</Panel>
 
 		<Panel title={m.resort_rating_title()}>

@@ -9,6 +9,7 @@
 
 	const navItems = $derived([
 		{ href: href('/'), label: m.nav_home(), current: path === '/' },
+		{ href: href('/resorts'), label: m.list_title(), current: path === '/resorts' },
 		{ href: href('/compare'), label: m.nav_compare(), current: path === '/compare' }
 	]);
 </script>

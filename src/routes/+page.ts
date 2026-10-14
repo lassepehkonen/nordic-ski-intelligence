@@ -2,7 +2,6 @@ import { createPreviewRepositories } from '#lib/data/repository.js';
 import {
 	bestByConditions,
 	filterResorts,
-	freshestSnow,
 	parseComparisonSelection,
 	parseFilters,
 	sortResorts
@@ -30,9 +29,10 @@ export const load: PageLoad = ({ url }) => {
 		filtered,
 		comparisonSelection: selectedForComparison,
 		totalCount: allItems.length,
-		// Highlights follow the active filters, so a filtered or searched view stays coherent.
+		// The map is the home page; a compact "best conditions" row sits under it, so the
+		// highlights follow the active filters and the page never fills with cards.
 		best: bestByConditions(filtered, 3),
-		fresh: freshestSnow(filtered, 3),
+		// The home page is the map: markers follow exactly the filter result set.
 		mapPoints: toMapPoints(filtered, locale, (slug) =>
 			compareLink(selectedForComparison, slug, locale)
 		),

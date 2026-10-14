@@ -12,6 +12,7 @@
 				<h2>{m.footer_navigation()}</h2>
 				<ul class="stack" style="--gap: 0.35rem">
 					<li><a href={href('/')}>{m.nav_home()}</a></li>
+					<li><a href={href('/resorts')}>{m.list_title()}</a></li>
 					<li><a href={href('/compare')}>{m.nav_compare()}</a></li>
 					<li><a href="/api/health">{m.footer_health_link()}</a></li>
 				</ul>

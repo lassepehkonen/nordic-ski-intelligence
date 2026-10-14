@@ -10,7 +10,7 @@ import type { RequestHandler } from './$types';
  */
 export const GET: RequestHandler = ({ url }) => {
 	const origin = siteOrigin(url.origin);
-	const paths = ['/', '/compare', ...RESORTS.map((resort) => `/resort/${resort.id}`)];
+	const paths = ['/', '/resorts', '/compare', ...RESORTS.map((resort) => `/resort/${resort.id}`)];
 	const lastModified = new Date().toISOString().slice(0, 10);
 
 	const entries = paths.flatMap((path) => {

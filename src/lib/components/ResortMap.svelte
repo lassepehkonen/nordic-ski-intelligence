@@ -105,12 +105,17 @@
 					className: 'hillshade-layer',
 					opacity: dark ? 0.35 : 0.45
 				});
+				// Labels live in their own pane so marker shadows and popups stay above them
+				// (marker shadows are painted in Leaflet's shadowPane).
+				instance.createPane('labels-pane');
+				const labelsPane = instance.getPane('labels-pane');
+				if (labelsPane) labelsPane.style.zIndex = '450';
 				const labels = L.tileLayer(labelUrl(), {
 					maxZoom: 18,
 					attribution: '',
 					className: 'labels-layer',
 					opacity: 0.9,
-					pane: 'shadowPane'
+					pane: 'labels-pane'
 				});
 				tiles.addTo(instance);
 				hillshade.addTo(instance);

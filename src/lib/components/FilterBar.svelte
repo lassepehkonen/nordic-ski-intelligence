@@ -14,20 +14,20 @@
 	interface Props {
 		filters: ResortFilters;
 		resultCount: number;
+		/** Canonical path of the page the filters live on, so the same bar works on every page. */
+		basePath: string;
 	}
 
-	let { filters, resultCount }: Props = $props();
+	let { filters, resultCount, basePath }: Props = $props();
 
 	const locale = $derived(currentLocale());
-
-	/** Server-side path of the current page, so filters survive a locale-agnostic navigation. */
-	const basePath = $derived(href('/'));
+	const baseHref = $derived(href(basePath));
 
 	function navigate(next: Partial<ResortFilters>) {
 		const merged: ResortFilters = { ...filters, ...next };
 		const params = filtersToSearchParams(merged);
 		const query = params.toString();
-		void goto(`${basePath}${query ? `?${query}` : ''}`, { reset: false });
+		void goto(`${baseHref}${query ? `?${query}` : ''}`, { reset: false });
 	}
 
 	/**
@@ -60,7 +60,7 @@
 	};
 </script>
 
-<form class="card filters" method="get" action={basePath}>
+<form class="card filters" method="get" action={baseHref}>
 	<div class="field search-field">
 		<label for="filter-q">{m.home_search_label()}</label>
 		<input
@@ -163,7 +163,7 @@
 		</p>
 		<div class="cluster" style="--gap: 0.5rem">
 			<button class="btn" type="submit">{m.filter_apply()}</button>
-			<a class="btn" href={basePath}>{m.filter_reset()}</a>
+			<a class="btn" href={baseHref}>{m.filter_reset()}</a>
 		</div>
 	</div>
 </form>

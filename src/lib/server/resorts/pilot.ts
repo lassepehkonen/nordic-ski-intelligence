@@ -285,8 +285,8 @@ export const pilotResorts: PilotResort[] = [
 		},
 		inventory: {
 			lifts: 6,
-			pistes: null,
-			sourceUrl: 'https://riksgransen.se/en/snow-report-mountain-status/'
+			pistes: 19,
+			sourceUrl: 'https://sv.wikipedia.org/wiki/Riksgr%C3%A4nsen'
 		},
 		weather: {
 			provider: 'smhi',
@@ -295,7 +295,7 @@ export const pilotResorts: PilotResort[] = [
 		status: {
 			displayApproval: 'approved',
 			lifts: { open: null, total: 6 },
-			pistes: { open: null, total: null },
+			pistes: { open: null, total: 19 },
 			freshness: 'unavailable',
 			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://riksgransen.se/en/snow-report-mountain-status/'

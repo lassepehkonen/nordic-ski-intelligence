@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-netlify';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 
 export default defineConfig({
 	plugins: [
@@ -11,7 +12,10 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 			adapter: adapter()
-		})
+		}),
+		// Locale routing and message compilation are configured in project.inlang/paraglide.config.js
+		// so the Vite plugin and the `i18n:compile` CLI script share one source of truth.
+		paraglideVitePlugin({ project: './project.inlang' })
 	],
 	test: {
 		expect: { requireAssertions: true },

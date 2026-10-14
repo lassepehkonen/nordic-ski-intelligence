@@ -1,6 +1,8 @@
 # Nordic Ski Intelligent
 
-Nordic Ski Intelligent is a Nordic ski-resort information product. The repository contains the Phase 2 domain/database foundation and a small Phase 3 SvelteKit shell for CI and deployment verification. **It does not yet contain product UI, live resort data, collectors, a scoring engine or a production Supabase project.**
+Nordic Ski Intelligent is a Nordic ski-resort information product. The repository contains the Phase 2 domain/database foundation and, since Phase 7, the multilingual product user interface: a map-first homepage, resort pages and a resort comparison, fully usable in Finnish, English, Swedish and Norwegian.
+
+**What is not in place yet:** live resort or weather feeds, collectors, a production Supabase project and approved source rights. All snow, weather and forecast values shown by the UI are clearly labelled illustrative sample data, and resort facts are curated from the reference sources listed on each resort page. Do not use the preview for safety decisions.
 
 ## Development
 
@@ -11,7 +13,9 @@ mise exec -- npm ci
 mise exec -- npm run dev
 ```
 
-The starter route is intentionally limited to a status page and `GET /api/health`; it is not product functionality. Run the local checks with:
+Every public page is locale-prefixed: `/fi`, `/en`, `/sv`, `/no` (the unprefixed root redirects to the resolved language). Resort pages live at `/{locale}/resort/{slug}`, the comparison at `/{locale}/compare?resorts=levi,trysil,hemsedal`.
+
+Run the local checks with:
 
 ```sh
 mise exec -- npm run format:check
@@ -21,6 +25,8 @@ mise exec -- npm test
 mise exec -- npm run build
 mise exec -- npm run audit
 ```
+
+UI strings live in `messages/{fi,en,sv,no}.json`; locale routing, hreflang, canonical URLs and the sitemap follow [ADR-0007](docs/architecture/decisions/0007-i18n-routing.md), and the Phase 7 record is in [docs/product/phase-7-multilingual-product-ui.md](docs/product/phase-7-multilingual-product-ui.md).
 
 The database suite uses a local Supabase stack only. See [database setup and testing](docs/architecture/testing.md) before running it; never reset or directly modify a remote database.
 

@@ -46,6 +46,9 @@ For each source/dataset/endpoint, record: owner/contact; exact endpoint and fiel
 - OpenSkiData is ODbL.[47]
 - OpenSnowMap rendered layers add CC BY-SA conditions.[48]
 - **Excluded:** Fnugg absent a written waiver because of its competitor-product restriction.[39]
+
+  Update 13 October 2026: Fnugg's v1 API was verified live against the Norwegian pilot resorts (Trysil id 2, Hemsedal id 5, Hafjell id 12) and is reclassified **Conditional** rather than categorically excluded: development/internal use with fnugg.no attribution is acceptable under its published terms, and commercial customer-facing use still requires the owner's written waiver (competitor-service restriction remains). The ADR-0008 approval gate applies before any production collector runs.
+
 - **Not MVP:** Tripadvisor review content cannot be cached by default and is subject to client-only/non-indexing display rules.[54][56][58]
 - Google Places permits indefinite storage of Place IDs only; review/photo use requires author attribution, direct source links and EEA-term checks.[52][53]
 

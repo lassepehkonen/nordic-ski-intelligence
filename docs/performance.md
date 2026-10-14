@@ -79,6 +79,15 @@ still absorbing load spikes at the edge (SWR 600 s).
   | `/en/resort/levi` | 98          | 98            | 100            | 66  |
   | `/en/compare`     | 99          | 100           | 100            | 66  |
 
+  Live deploy-preview measurement (`https://deploy-preview-14--….netlify.app/en`): Performance
+  97/99/98/97 over four runs with the same throttling — variance from CDN/SSR latency. The
+  Netlify Lighthouse plugin's own 80 for the same deploy is a different sample: it audits the
+  **preview deploy**, where Netlify injects its preview scripts ahead of the app (measured
+  2.3 MiB / 1.6 MB transferred from `app.netlify.com/cdp` plus Segment analytics and Bugsnag on
+  the page), and its CI runner is a different machine; the preview URL also serves
+  `x-robots-tag: noindex` (correct for previews). Production deploys carry none of those
+  injections, and the localhost production-build numbers above are the app's own truth.
+
   Every page: TBT 0 ms, CLS 0, LCP 1.4–1.8 s on the local runner. Known, accepted deductions:
   `image-size-responsive` flags the raster map tiles (a tile pyramid has no srcset mechanism);
   the two SEO 66s are the **degraded preview state** — without local Supabase credentials the

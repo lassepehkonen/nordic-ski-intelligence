@@ -3,7 +3,7 @@
 - **Reviewed:** 5 October 2026
 - **Scope:** initial ten-resort slice in Finland, Sweden and Norway
 - **Authority:** [`docs/product/master-context.md`](product/master-context.md); Phase 0 architecture and ADRs
-- **Status:** research only. No production collectors, API accounts, scraping jobs, or integrations have been created.
+- **Status:** Phase 5 local/staging implementation. National weather adapters are deterministic; resort-page values are manual counts only. No automated resort-page collector or public deployment.
 
 ## Executive findings
 
@@ -17,7 +17,7 @@
    **No shared paid weather fallback is needed in this stage.** Use the national services; if one is unavailable or stale, expose that state rather than silently substituting a different model. Open-Meteo is deferred and would require a separate cost/terms decision if a real coverage gap appears.[13][14]
 
 3. **Measured snow depth:** open weather-station observations can supply a nearest-station proxy—FMI in Finland, SMHI metobs in Sweden, and MET Frost in Norway. Select the nearest valid snow-depth station and display its distance, elevation and measurement time; it is not the resort's piste measurement.[69][127][129]
-4. **Separate basic facts from live conditions.** Official resort sites are the primary factual reference where terms and technical constraints permit. Manually curate only necessary basic facts with field-level source URLs and verification dates; this is not blanket permission to scrape or store page content. Dynamic reports, lift/trail status, prices and webcams require specific rights or a licensed feed; request operator permission or a Mountain News quote.[33][34][38]
+4. **Limit resort-page input to four counts.** Per product-owner authorization, manually record only total/open lifts and total/open pistes, plus a source URL and our local checked-at time. Do not collect any other resort-page field; no page scraping, page timestamps, HTML, embedded data or AI extraction. Missing counts remain `null`. This exception does not authorize automated page requests or any other resort-page content.
 5. **Static geography:** OpenSkiData is a useful downloadable piste/lift dataset, but ODbL and attribution obligations apply; automated download is limited to once per day.[47]
 
    JYU's LIPAS data-content terms confirm CC BY 4.0 and commercial use for Finnish facility metadata; cite JYU/LIPAS and the snapshot date. The separate OpenAPI licence label concerns the API-spec metadata, not a hold on the dataset.[119][40][41]

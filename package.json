@@ -11,7 +11,8 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"precheck": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --emit-ts-declarations",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && npm run check:i18n",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format:check": "prettier --check .",
 		"format": "prettier --write .",
@@ -20,16 +21,23 @@
 		"test:domain": "vitest run --passWithNoTests tests/domain",
 		"test:scoring": "vitest run --passWithNoTests tests/scoring",
 		"test:adapters": "vitest run --passWithNoTests tests/adapters",
+		"test:i18n": "vitest run tests/i18n",
 		"test:api": "vitest run --passWithNoTests src/routes/api tests/api",
 		"test:security": "vitest run --passWithNoTests tests/security && node scripts/check-database-safety.js",
-		"test": "npm run test:unit && npm run test:domain && npm run test:scoring && npm run test:adapters && npm run test:api && npm run test:security",
-		"audit": "npm audit --audit-level=high"
+		"test": "npm run test:unit && npm run test:domain && npm run test:scoring && npm run test:adapters && npm run test:i18n && npm run test:api && npm run test:security",
+		"collect:pilot": "RUN_LIVE_PILOT=1 PERSIST_PILOT_RUN=1 node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run tests/live/pilot-weather.integration.test.ts",
+		"publish:pilot-counts": "PUBLISH_PILOT_STATUS=1 node --env-file-if-exists=.env ./node_modules/vitest/vitest.mjs run tests/live/pilot-status-publish.integration.test.ts",
+		"audit": "npm audit --audit-level=high",
+		"check:i18n": "inlang check --project ./project.inlang"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
+		"@inlang/cli": "^3.4.0",
+		"@inlang/paraglide-js": "^2.27.0",
 		"@sveltejs/adapter-netlify": "^7.0.0",
 		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@types/leaflet": "^1.9.22",
 		"@types/node": "^24",
 		"eslint": "^10.4.1",
 		"eslint-config-prettier": "^10.1.8",
@@ -47,5 +55,8 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"leaflet": "^1.9.4"
 	}
 }

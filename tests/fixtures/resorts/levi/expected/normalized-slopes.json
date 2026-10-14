@@ -1,0 +1,41 @@
+{
+	"facts": [
+		{
+			"category": "slope",
+			"key": "open_count",
+			"fieldKey": "open_piste_count",
+			"valueNumeric": 2,
+			"unit": "count",
+			"sourceObservedAt": "2026-02-20T08:55:00.000Z"
+		},
+		{
+			"category": "slope",
+			"key": "total_count",
+			"fieldKey": "total_piste_count",
+			"valueNumeric": 3,
+			"unit": "count",
+			"sourceObservedAt": "2026-02-20T08:55:00.000Z"
+		},
+		{
+			"category": "slope",
+			"key": "piste.fixture-slope-1.status",
+			"fieldKey": "operating_status",
+			"valueText": "open",
+			"sourceObservedAt": "2026-02-20T08:55:00.000Z"
+		},
+		{
+			"category": "slope",
+			"key": "piste.fixture-slope-2.status",
+			"fieldKey": "operating_status",
+			"valueText": "open",
+			"sourceObservedAt": "2026-02-20T08:55:00.000Z"
+		},
+		{
+			"category": "slope",
+			"key": "piste.fixture-slope-3.status",
+			"fieldKey": "operating_status",
+			"valueText": "closed",
+			"sourceObservedAt": "2026-02-20T08:55:00.000Z"
+		}
+	]
+}

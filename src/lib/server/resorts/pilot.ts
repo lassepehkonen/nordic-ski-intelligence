@@ -37,6 +37,13 @@ export interface PilotResort {
 		sourceUrl: string;
 		displayApproval: 'pending' | 'approved';
 	};
+	/** Countable published off-piste routes; present only when a factual total exists. */
+	offpiste?: {
+		routes: number;
+		open: number | null;
+		sourceUrl: string;
+		attribution: string;
+	};
 }
 
 const MANUAL_STATUS_TTL_MS = 6 * 60 * 60 * 1000;
@@ -74,9 +81,9 @@ export const pilotResorts: PilotResort[] = [
 			sourceLabel: 'Jyväskylän yliopisto / LIPAS; Ylläsjärvi site 98018'
 		},
 		inventory: {
-			lifts: 26,
+			lifts: 29,
 			pistes: 63,
-			sourceUrl: 'https://api.lipas.fi/v2/sports-sites?type-codes=4110&page-size=100&page=1'
+			sourceUrl: 'https://ski.yllas.fi/rinteet-ja-hissit/'
 		},
 		weather: {
 			provider: 'fmi',
@@ -84,8 +91,8 @@ export const pilotResorts: PilotResort[] = [
 		},
 		status: {
 			displayApproval: 'approved',
-			lifts: { open: null, total: null },
-			pistes: { open: null, total: null },
+			lifts: { open: null, total: 29 },
+			pistes: { open: null, total: 63 },
 			freshness: 'unavailable',
 			fetchedAt: '2026-10-13T20:42:19Z',
 			sourceUrl: 'https://ski.yllas.fi/en/slopes-and-lifts/opening-hours/'
@@ -287,6 +294,13 @@ export const pilotResorts: PilotResort[] = [
 			lifts: 6,
 			pistes: 19,
 			sourceUrl: 'https://sv.wikipedia.org/wiki/Riksgr%C3%A4nsen'
+		},
+		offpiste: {
+			// sv.wiki infobox: "Totalt 34 inkl off-pist" against 19 marked pistes → 15 routes.
+			routes: 15,
+			open: null,
+			sourceUrl: 'https://sv.wikipedia.org/wiki/Riksgr%C3%A4nsen',
+			attribution: 'Wikipedia (sv) — Riksgränsen infobox'
 		},
 		weather: {
 			provider: 'smhi',

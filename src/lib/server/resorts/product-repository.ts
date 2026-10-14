@@ -27,6 +27,13 @@ export interface PilotProductResort {
 		sourceUrl: string;
 		attribution: string;
 	};
+	/** Countable off-piste routes; null when the resort publishes none (or no count exists). */
+	offpiste: {
+		routes: number | null;
+		open: number | null;
+		sourceUrl: string | null;
+		attribution: string | null;
+	} | null;
 	weather: {
 		provider: WeatherProvider;
 		sourceUrl: string;

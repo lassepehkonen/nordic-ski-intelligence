@@ -7,6 +7,7 @@ import { loadPilotProduct } from '#lib/server/resorts/product-handler.js';
 import { buildProductView } from '#lib/server/resorts/product-view.js';
 import { findResort } from '#lib/server/resorts/product-query.js';
 import { buildSeo } from '#lib/seo.js';
+import { lookupAvalancheForecast } from '#lib/server/weather/avalanche.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders, url }) => {
 	const locale = getLocale();
@@ -44,10 +45,13 @@ export const load: PageServerLoad = async ({ params, setHeaders, url }) => {
 	const title = m.metaResortTitle({ resort: resort.name });
 	const description = m.metaResortDescription({ resort: resort.name, region: resort.region });
 
+	const avalanche = await lookupAvalancheForecast(params.slug);
+
 	return {
 		locale,
 		unavailable: false,
 		resort,
+		avalanche,
 		lastUpdated: product.lastUpdated,
 		seo: buildSeo({
 			path,

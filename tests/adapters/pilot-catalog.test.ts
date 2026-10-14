@@ -63,8 +63,10 @@ describe('Phase 5 resort adapter catalog', () => {
 			expect(Object.keys(resort.inventory).sort()).toEqual(['lifts', 'pistes', 'sourceUrl'].sort());
 		}
 		const yllas = pilotResorts.find((resort) => resort.slug === 'yllas');
-		expect(yllas?.status.lifts.total).toBeNull();
-		expect(yllas?.status.pistes.total).toBeNull();
+		// Ylläs totals now verified from the operator page (ski.yllas.fi: 29 lifts / 63 pistes);
+		// open counts remain null off-season.
+		expect(yllas?.status.lifts.total).toBe(29);
+		expect(yllas?.status.pistes.total).toBe(63);
 		expect(yllas?.status.pistes.open).toBeNull();
 		expect(
 			pilotResorts.find((resort) => resort.slug === 'iso-syote')?.status.lifts.open

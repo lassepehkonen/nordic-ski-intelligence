@@ -175,6 +175,14 @@ export interface ResortView {
 		readonly pistesOpenRatio: number | null;
 		readonly liftsOpenRatio: number | null;
 	};
+	/** Published, countable off-piste routes; null when the resort has none published. */
+	readonly offpiste: {
+		readonly routes: number;
+		/** Open-route count from the resort's own status page; null when not published. */
+		readonly open: number | null;
+		readonly sourceUrl: string;
+		readonly attribution: string | null;
+	} | null;
 	readonly score: ConditionsScoreView;
 	readonly rating: ResortRatingView;
 	readonly sources: readonly ResortSourceView[];
@@ -418,30 +426,36 @@ function buildForecastDaily(
 		// distinct days follow.
 		byDay.set(key, [...(byDay.get(key) ?? []), point]);
 	}
-	return [...byDay.entries()]
-		.filter(([key]) => key >= today)
-		.sort(([a], [b]) => a.localeCompare(b))
-		.slice(0, 5)
-		// A day with no points would render an all-dash row — drop it instead.
-		.filter(([, dayPoints]) => dayPoints.length > 0)
-		.map(([date, dayPoints]) => {
-			const temps = dayPoints.map((p) => p.airTemperatureC).filter((t): t is number => t !== null);
-			const winds = dayPoints.map((p) => p.windSpeedMs).filter((w): w is number => w !== null);
-			const precip = dayPoints.map((p) => p.precipitationMm).filter((v): v is number => v !== null);
-			const snow = dayPoints.map((p) => p.snowfallMm).filter((v): v is number => v !== null);
-			return {
-				date,
-				tempMinC: temps.length ? Math.min(...temps) : null,
-				tempMaxC: temps.length ? Math.max(...temps) : null,
-				precipitationMm: precip.length
-					? Number(precip.reduce((a, b) => a + b, 0).toFixed(1))
-					: null,
-				snowfallMm: snow.length ? Number(snow.reduce((a, b) => a + b, 0).toFixed(1)) : null,
-				windMaxMs: winds.length ? Math.max(...winds) : null,
-				windDirectionPoints: dominantWindDirection(dayPoints),
-				pointCount: dayPoints.length
-			};
-		});
+	return (
+		[...byDay.entries()]
+			.filter(([key]) => key >= today)
+			.sort(([a], [b]) => a.localeCompare(b))
+			.slice(0, 5)
+			// A day with no points would render an all-dash row — drop it instead.
+			.filter(([, dayPoints]) => dayPoints.length > 0)
+			.map(([date, dayPoints]) => {
+				const temps = dayPoints
+					.map((p) => p.airTemperatureC)
+					.filter((t): t is number => t !== null);
+				const winds = dayPoints.map((p) => p.windSpeedMs).filter((w): w is number => w !== null);
+				const precip = dayPoints
+					.map((p) => p.precipitationMm)
+					.filter((v): v is number => v !== null);
+				const snow = dayPoints.map((p) => p.snowfallMm).filter((v): v is number => v !== null);
+				return {
+					date,
+					tempMinC: temps.length ? Math.min(...temps) : null,
+					tempMaxC: temps.length ? Math.max(...temps) : null,
+					precipitationMm: precip.length
+						? Number(precip.reduce((a, b) => a + b, 0).toFixed(1))
+						: null,
+					snowfallMm: snow.length ? Number(snow.reduce((a, b) => a + b, 0).toFixed(1)) : null,
+					windMaxMs: winds.length ? Math.max(...winds) : null,
+					windDirectionPoints: dominantWindDirection(dayPoints),
+					pointCount: dayPoints.length
+				};
+			})
+	);
 }
 
 /** 16-point compass labels; the vector mean rounds to the nearest of the 8 shown. */
@@ -612,6 +626,15 @@ export function buildResortView(resort: PilotProductResort, options: { now: Date
 			pistesOpenRatio: openRatio(resort.status.pistes.open, resort.status.pistes.total),
 			liftsOpenRatio: openRatio(resort.status.lifts.open, resort.status.lifts.total)
 		},
+		offpiste:
+			resort.offpiste && isFiniteNumber(resort.offpiste.routes) && resort.offpiste.sourceUrl
+				? {
+						routes: resort.offpiste.routes,
+						open: isFiniteNumber(resort.offpiste.open) ? resort.offpiste.open : null,
+						sourceUrl: resort.offpiste.sourceUrl,
+						attribution: resort.offpiste.attribution ?? null
+					}
+				: null,
 		score: buildConditionsScoreView(resort, options.now),
 		rating: buildResortRatingView({}, options.now),
 		sources: collectSources(resort),

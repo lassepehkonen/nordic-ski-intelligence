@@ -34,6 +34,7 @@
 	interface ResortData {
 		locale: string;
 		resort: ResortView | null;
+		avalanche: import('#lib/server/weather/avalanche.js').AvalancheForecastView | null;
 		seo: Seo;
 	}
 
@@ -159,26 +160,33 @@
 					>
 				</div>
 				<div class="metric">
-						<span class="metric-label">{m.labelSnowQuality()}</span>
-						<span class="metric-value">
-							{#if resort.weather.snow.quality}
+					<span class="metric-label">{m.labelSnowQuality()}</span>
+					<span class="metric-value">
+						{#if resort.weather.snow.quality}
 							{@const q = resort.weather.snow.quality}
-							{@const qualityLabel = ({
-								'fresh-powder': m.snowQualityFreshPowder(),
-								'dry-preserved': m.snowQualityDryPreserved(),
-								'moist-settled': m.snowQualityMoistSettled(),
-								'crusted': m.snowQualityCrusted(),
-								'no-snow': m.snowQualityNoSnow()
-							} as Record<string, string>)[q.label] ?? q.label}
-							<span class="chip" class:chip-fresh={q.label === 'fresh-powder'}
-								class:chip-warn={q.label === 'moist-settled' || q.label === 'crusted'}>
-								{qualityLabel} {q.score}
+							{@const qualityLabel =
+								(
+									{
+										'fresh-powder': m.snowQualityFreshPowder(),
+										'dry-preserved': m.snowQualityDryPreserved(),
+										'moist-settled': m.snowQualityMoistSettled(),
+										crusted: m.snowQualityCrusted(),
+										'no-snow': m.snowQualityNoSnow()
+									} as Record<string, string>
+								)[q.label] ?? q.label}
+							<span
+								class="chip"
+								class:chip-fresh={q.label === 'fresh-powder'}
+								class:chip-warn={q.label === 'moist-settled' || q.label === 'crusted'}
+							>
+								{qualityLabel}
+								{q.score}
 							</span>
 						{:else}
-								<span>—</span>
-							{/if}
-						</span>
-					</div>
+							<span>—</span>
+						{/if}
+					</span>
+				</div>
 			</div>
 			<p class="muted" style="margin-top:.6rem">
 				{m.labelSource()}:
@@ -433,7 +441,44 @@
 	</section>
 
 	<section class="split" style="margin-top: 1.25rem">
-		<article class="card">
+		{#if data.avalanche}
+			<article class="card" style="margin-top: 1.25rem">
+				<div class="panel-head">
+					<h2>{m.avalancheTitle()}</h2>
+					<span class="muted">{data.avalanche.regionName}</span>
+				</div>
+				<div class="metrics">
+					{#each data.avalanche.days as day (day.validFrom)}
+						<div class="metric">
+							<span class="metric-label">
+								{formatDate(day.validFrom, data.locale, resort.countryCode)}
+							</span>
+							<span class="metric-value">
+								{#if day.dangerLevel === null}
+									<span class="chip">{m.avalancheNotRated()}</span>
+								{:else}
+									<span
+										class="chip chip-today"
+										class:chip-fresh={day.dangerLevel <= 2}
+										class:chip-warn={day.dangerLevel >= 3}
+									>
+										{m.avalancheLevel({ level: day.dangerLevel })}
+									</span>
+								{/if}
+							</span>
+						</div>
+					{/each}
+				</div>
+				<p class="muted" style="margin-top:.6rem">
+					{m.labelSource()}:
+					<a href={data.avalanche.sourceUrl} target="_blank" rel="noreferrer"
+						>{data.avalanche.attribution}</a
+					>
+				</p>
+			</article>
+		{/if}
+
+		<article class="card" style="margin-top: 1.25rem">
 			<div class="panel-head">
 				<h2>{m.resortTerrainTitle()}</h2>
 			</div>
@@ -460,6 +505,16 @@
 						>{countryName(resort.countryCode, data.locale)}</span
 					>
 				</div>
+				{#if resort.offpiste}
+					<div class="metric">
+						<span class="metric-label">{m.labelOffpisteRoutes()}</span>
+						<span class="metric-value tabular">
+							{resort.offpiste.open === null
+								? formatCount(resort.offpiste.routes, data.locale)
+								: `${formatCount(resort.offpiste.open, data.locale)} / ${formatCount(resort.offpiste.routes, data.locale)}`}
+						</span>
+					</div>
+				{/if}
 			</div>
 		</article>
 

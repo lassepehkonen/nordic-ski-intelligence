@@ -187,6 +187,17 @@ export function pickBestConditions(resorts: readonly ResortView[]): ResortView |
 	return best;
 }
 
+/**
+ * The top published Conditions Scores in descending order, so the home page can show a compact
+ * "best conditions" row without rendering the whole catalogue as cards.
+ */
+export function pickTopConditions(resorts: readonly ResortView[], limit = 3): ResortView[] {
+	return resorts
+		.filter((resort) => resort.score.published && resort.score.score !== null)
+		.sort((a, b) => (b.score.score ?? -1) - (a.score.score ?? -1))
+		.slice(0, limit);
+}
+
 /** Most snow in the last 24 hours, or null when no shown resort reports fresh snow. */
 export function pickFreshestSnow(resorts: readonly ResortView[]): ResortView | null {
 	let freshest: ResortView | null = null;

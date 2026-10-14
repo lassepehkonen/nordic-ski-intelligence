@@ -9,6 +9,7 @@
 	"metaResortDescription": "Current conditions, weather, forecast, lifts and piste status for {resort} in {region}. Source-linked data.",
 	"navMap": "Map",
 	"navCompare": "Compare",
+	"navResorts": "Resorts",
 	"navApi": "Product API",
 	"skipToContent": "Skip to content",
 	"languageSelect": "Language",
@@ -234,5 +235,12 @@
 	"weatherAttribution": "{attribution}; normalized forecast data.",
 	"weatherSource": "Weather-data source",
 	"temperature": "Temperature",
-	"notAvailable": "Not yet available"
+	"notAvailable": "Not yet available",
+	"resortsIntro": "Browse every resort as a card, shaped by the same filters as the map.",
+	"resortsResultsTitle": "Matching resorts",
+	"metaResortsTitle": "Resorts and their conditions",
+	"metaResortsDescription": "Browse every ski resort in Finland, Sweden and Norway as cards: Conditions Score, snow depth, fresh snow, open pistes and lifts — filterable and sortable.",
+	"homeListTitleResorts": "Resorts",
+	"resortsListTitle": "Resorts",
+	"resortsOfTotal": "of {total} resorts"
 }

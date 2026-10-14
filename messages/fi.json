@@ -9,6 +9,7 @@
 	"metaResortDescription": "{resort}-hiihtokeskuksen ajankohtaiset olosuhteet, sää, ennuste, hissit ja rinteiden tilanne alueella {region}. Tiedot linkitetty lähteisiin.",
 	"navMap": "Kartta",
 	"navCompare": "Vertaile",
+	"navResorts": "Keskukset",
 	"navApi": "Tuote-API",
 	"skipToContent": "Siirry sisältöön",
 	"languageSelect": "Kieli",
@@ -234,5 +235,12 @@
 	"weatherAttribution": "{attribution}; normalisoidut ennustetiedot.",
 	"weatherSource": "Säätietojen lähde",
 	"temperature": "Lämpötila",
-	"notAvailable": "Ei vielä saatavilla"
+	"notAvailable": "Ei vielä saatavilla",
+	"resortsIntro": "Jokainen keskus korttina, samojen suodattimien muotoilemana kuin kartta.",
+	"resortsResultsTitle": "Suodattimia vastaavat keskukset",
+	"metaResortsTitle": "Hiihtokeskukset ja niiden olosuhteet",
+	"metaResortsDescription": "Selaa kaikkien Suomen, Ruotsin ja Norjan hiihtokeskusten kortit: olosuhdepisteet, lumen syvyys, uusi lumi sekä avoinna olevat rinteet ja hissit — suodattimineen ja järjestyksessä.",
+	"homeListTitleResorts": "Keskukset",
+	"resortsListTitle": "Keskukset",
+	"resortsOfTotal": "kaikista {total} keskuksesta"
 }

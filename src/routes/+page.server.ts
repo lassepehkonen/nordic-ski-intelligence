@@ -9,7 +9,8 @@ import {
 	isQueryActive,
 	parseResortQuery,
 	pickBestConditions,
-	pickFreshestSnow
+	pickFreshestSnow,
+	pickTopConditions
 } from '#lib/server/resorts/product-query.js';
 import { buildSeo } from '#lib/seo.js';
 
@@ -55,6 +56,8 @@ export const load: PageServerLoad = async ({ setHeaders, url }) => {
 		query: { ...query, active: isQueryActive(query) },
 		bestSlug: best?.slug ?? null,
 		freshestSlug: freshest?.slug ?? null,
+		// A compact highlight row: the top published Conditions Scores for the *filtered* set.
+		topResorts: pickTopConditions(resorts, 3),
 		seo: buildSeo({
 			path: '/',
 			locale,

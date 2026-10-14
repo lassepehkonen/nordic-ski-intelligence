@@ -9,6 +9,7 @@
 	"metaResortDescription": "Nåværende forhold, vær, værvarsel, heiser og løypestatus for {resort} i {region}. Data med kildelenker.",
 	"navMap": "Kart",
 	"navCompare": "Sammenlign",
+	"navResorts": "Anlegg",
 	"navApi": "Produkt-API",
 	"skipToContent": "Gå til innhold",
 	"languageSelect": "Språk",
@@ -234,5 +235,12 @@
 	"weatherAttribution": "{attribution}; normaliserte værvarseldata.",
 	"weatherSource": "Kilde for værdata",
 	"temperature": "Temperatur",
-	"notAvailable": "Ikke tilgjengelig ennå"
+	"notAvailable": "Ikke tilgjengelig ennå",
+	"resortsIntro": "Hvert anlegg som kort, formet av de samme filtrene som kartet.",
+	"resortsResultsTitle": "Anlegg som matcher filtrene",
+	"metaResortsTitle": "Skianlegg og forholdene der",
+	"metaResortsDescription": "Bla gjennom kortene for hvert skianlegg i Finland, Sverige og Norge: forholdspoeng, snødybde, nysnø, åpne løyper og heiser — med filtre og sortering.",
+	"homeListTitleResorts": "Anlegg",
+	"resortsListTitle": "Anlegg",
+	"resortsOfTotal": "av {total} anlegg"
 }

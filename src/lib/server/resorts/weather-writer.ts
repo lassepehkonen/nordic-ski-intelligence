@@ -93,10 +93,7 @@ export function createPilotWeatherWriter(options: PilotWeatherWriterOptions) {
 				providerRequests: result.providerRequests,
 				latencyMs: result.data?.latencyMs ?? null,
 				forecastPointsParsed: result.data?.forecast.points.length ?? 0,
-				forecastPointsStored: Math.min(
-					result.data?.forecast.points.length ?? 0,
-					130
-				),
+				forecastPointsStored: Math.min(result.data?.forecast.points.length ?? 0, 130),
 				errorCodes: safeErrorCodes(result.errors),
 				persistenceOk: rowWrites[index]?.status === 'fulfilled'
 			}));

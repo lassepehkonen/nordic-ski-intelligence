@@ -49,9 +49,7 @@ describe('Phase 5 resort adapter catalog', () => {
 		expect(levi).toBeDefined();
 		// Fetched 2026-10-13T20:42:19Z — fresh within 6 h, stale after.
 		expect(getStatusFreshness(levi!.status, new Date('2026-10-13T20:42:18Z'))).toBe('fresh');
-		expect(
-			getStatusFreshness(levi!.status, new Date('2026-10-14T02:42:20Z'))
-		).toBe('stale');
+		expect(getStatusFreshness(levi!.status, new Date('2026-10-14T02:42:20Z'))).toBe('stale');
 		expect(isStatusDisplayApproved(levi!.status)).toBe(true);
 	});
 

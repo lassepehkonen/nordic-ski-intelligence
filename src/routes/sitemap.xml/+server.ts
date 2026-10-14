@@ -31,7 +31,7 @@ function urlEntry(origin: string, path: string): string {
 }
 
 export const GET = async ({ url, setHeaders }: RequestEvent) => {
-	let paths = ['/', '/compare'];
+	let paths = ['/', '/resorts', '/compare'];
 
 	try {
 		const result = await loadPilotProduct({

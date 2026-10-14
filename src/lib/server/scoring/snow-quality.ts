@@ -31,11 +31,7 @@ export interface SnowQualityPoint {
 }
 
 export type SnowQualityLabel =
-	| 'fresh-powder'
-	| 'dry-preserved'
-	| 'moist-settled'
-	| 'crusted'
-	| 'no-snow';
+	'fresh-powder' | 'dry-preserved' | 'moist-settled' | 'crusted' | 'no-snow';
 
 export interface SnowQualityResult {
 	/** 0–100; 100 = untouched cold powder, 0 = no usable snow. */
@@ -96,7 +92,12 @@ export function computeSnowQuality(input: SnowQualityInput): SnowQualityResult {
 				crustPenalty = Math.min(100, crustPenalty + 2);
 			}
 		}
-		if (temp !== null && temp < DRY_COLD_THRESHOLD_C && snowfall === 0 && (wind ?? 0) <= WIND_CRUST_THRESHOLD_MS) {
+		if (
+			temp !== null &&
+			temp < DRY_COLD_THRESHOLD_C &&
+			snowfall === 0 &&
+			(wind ?? 0) <= WIND_CRUST_THRESHOLD_MS
+		) {
 			// Dry, calm and cold: pure preservation, minor settlement only.
 			reserveMm *= 1 - COLD_SETTLE_FRACTION_PER_HOUR;
 			if (crustPenalty > 0) crustPenalty = Math.max(0, crustPenalty - 0.5);
@@ -104,7 +105,12 @@ export function computeSnowQuality(input: SnowQualityInput): SnowQualityResult {
 	}
 
 	if (reserveMm < 0.5) {
-		return { score: 0, label: 'no-snow', freshSnowFallenMm: round1(freshEpisodeMm), reserveDepthCm: 0 };
+		return {
+			score: 0,
+			label: 'no-snow',
+			freshSnowFallenMm: round1(freshEpisodeMm),
+			reserveDepthCm: 0
+		};
 	}
 
 	// Score: reserve volume relative to a 30 mm (=30 cm) reference, minus damage history.
@@ -119,7 +125,12 @@ export function computeSnowQuality(input: SnowQualityInput): SnowQualityResult {
 	else if (sawStrongWind || sawWarmHour) label = 'crusted';
 	else label = 'dry-preserved';
 
-	return { score, label, freshSnowFallenMm: round1(freshEpisodeMm), reserveDepthCm: round1(reserveMm) };
+	return {
+		score,
+		label,
+		freshSnowFallenMm: round1(freshEpisodeMm),
+		reserveDepthCm: round1(reserveMm)
+	};
 }
 
 function round1(value: number): number {

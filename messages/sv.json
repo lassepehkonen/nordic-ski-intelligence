@@ -9,6 +9,7 @@
 	"metaResortDescription": "Aktuella förhållanden, väder, prognos, liftar och piststatus för {resort} i {region}. Data med källkoppling.",
 	"navMap": "Karta",
 	"navCompare": "Jämför",
+	"navResorts": "Anläggningar",
 	"navApi": "Produkt-API",
 	"skipToContent": "Hoppa till innehåll",
 	"languageSelect": "Språk",
@@ -234,5 +235,12 @@
 	"weatherAttribution": "{attribution}; normaliserade prognosdata.",
 	"weatherSource": "Källa för väderdata",
 	"temperature": "Temperatur",
-	"notAvailable": "Ännu inte tillgänglig"
+	"notAvailable": "Ännu inte tillgänglig",
+	"resortsIntro": "Varje anläggning som kort, format av samma filter som kartan.",
+	"resortsResultsTitle": "Anläggningar som matchar filtren",
+	"metaResortsTitle": "Skidanläggningar och deras förhållanden",
+	"metaResortsDescription": "Bläddra bland korten för varje skidanläggning i Finland, Sverige och Norge: förhållandepoäng, snödjup, nysnö, öppna pister och liftar — filterbara och sorterbara.",
+	"homeListTitleResorts": "Anläggningar",
+	"resortsListTitle": "Anläggningar",
+	"resortsOfTotal": "av {total} anläggningar"
 }

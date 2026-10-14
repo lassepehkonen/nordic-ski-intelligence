@@ -22,6 +22,7 @@
 	const seo = $derived(data.seo ?? null);
 	const routeId = $derived(page.route.id ?? '/');
 	const isMap = $derived(routeId === '/');
+	const isResorts = $derived(routeId === '/resorts');
 	const isCompare = $derived(routeId === '/compare');
 </script>
 
@@ -48,6 +49,10 @@
 				<a
 					href={localizeHref('/', { locale: locale as Locale })}
 					aria-current={isMap ? 'page' : undefined}>{m.navMap()}</a
+				>
+				<a
+					href={localizeHref('/resorts', { locale: locale as Locale })}
+					aria-current={isResorts ? 'page' : undefined}>{m.navResorts()}</a
 				>
 				<a
 					href={localizeHref('/compare', { locale: locale as Locale })}
